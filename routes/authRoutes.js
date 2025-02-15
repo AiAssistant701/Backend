@@ -1,10 +1,13 @@
 import express from "express";
+import User from "../models/User.js";
 import {
   registerUser,
   loginUser,
   logoutUser,
 } from "../controllers/authController.js";
 import { body } from "express-validator";
+import verifyToken from "../middlewares/authMiddleware.js";
+import { checkRole } from "../middlewares/rolesMiddleware.js";
 
 const router = express.Router();
 
@@ -22,5 +25,11 @@ router.post(
 
 router.post("/login", loginUser);
 router.post("/logout", logoutUser);
+
+// =========TEST========= Only Admins Can View All Users
+router.get("/admin/users", verifyToken, checkRole(["admin"]), async (req, res) => {
+  const users = await User.find();
+  res.status(200).json(users);
+});
 
 export default router;

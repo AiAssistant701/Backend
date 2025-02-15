@@ -25,7 +25,7 @@ export const registerUser = async (req, res, next) => {
     return next({ statusCode: 400, message: errors.array()[0].msg });
   }
 
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
 
   try {
     let userExists = await User.findOne({ email });
@@ -34,7 +34,12 @@ export const registerUser = async (req, res, next) => {
       return next({ statusCode: 400, message: "User already exists" });
     }
 
-    const user = await User.create({ name, email, password });
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role: role || "user",
+    });
 
     if (user) {
       generateToken(res, user._id);
