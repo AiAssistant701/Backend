@@ -1,7 +1,7 @@
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
 import { validationResult } from "express-validator";
+import responseHandler from "../middlewares/responseHandler.js";
 
 // Generate JWT Token
 const generateToken = (res, userId) => {
@@ -19,10 +19,10 @@ const generateToken = (res, userId) => {
 
 // @route   POST /api/auth/signup
 // @desc    Register a new user
-export const registerUser = async (req, res) => {
+export const registerUser = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+    return next({ statusCode: 400, message: errors.array()[0].msg });
   }
 
   const { name, email, password } = req.body;
@@ -31,29 +31,30 @@ export const registerUser = async (req, res) => {
     let userExists = await User.findOne({ email });
 
     if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+      return next({ statusCode: 400, message: "User already exists" });
     }
 
     const user = await User.create({ name, email, password });
 
     if (user) {
       generateToken(res, user._id);
-      res.status(201).json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-      });
+      responseHandler(
+        res,
+        { _id: user._id, name: user.name, email: user.email },
+        "User registered",
+        201
+      );
     } else {
-      res.status(400).json({ message: "Invalid user data" });
+      return next({ statusCode: 400, message: "Invalid user data" });
     }
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    next(error);
   }
 };
 
 // @route   POST /api/auth/login
 // @desc    Authenticate user & get token
-export const loginUser = async (req, res) => {
+export const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
 
   try {
@@ -61,16 +62,16 @@ export const loginUser = async (req, res) => {
 
     if (user && (await user.matchPassword(password))) {
       generateToken(res, user._id);
-      res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-      });
+      responseHandler(
+        res,
+        { _id: user._id, name: user.name, email: user.email },
+        "User logged in"
+      );
     } else {
-      res.status(401).json({ message: "Invalid email or password" });
+      return next({ statusCode: 401, message: "Invalid email or password" });
     }
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    next(error);
   }
 };
 
@@ -81,5 +82,5 @@ export const logoutUser = (req, res) => {
     httpOnly: true,
     expires: new Date(0),
   });
-  res.json({ message: "Logged out successfully" });
+  responseHandler(res, null, "Logged out successfully");
 };

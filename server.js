@@ -9,6 +9,7 @@ import connectDB from "./config/db.js";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes.js";
 import rateLimit from "express-rate-limit";
+import errorHandler from "./middlewares/errorHandler.js";
 
 dotenv.config();
 
@@ -37,6 +38,9 @@ app.use(limiter);
 // Routes
 app.use("/api", routes);
 app.use("/api/auth", authRoutes);
+
+// Error Handling Middleware
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
