@@ -4,6 +4,8 @@ import {
   registerUser,
   loginUser,
   logoutUser,
+  requestPasswordReset,
+  resetPassword
 } from "../controllers/authController.js";
 import { body } from "express-validator";
 import verifyToken from "../middlewares/authMiddleware.js";
@@ -25,6 +27,8 @@ router.post(
 
 router.post("/login", loginUser);
 router.post("/logout", logoutUser);
+router.post("/forgot-password", requestPasswordReset);
+router.post("/reset-password/:token", resetPassword);
 
 // =========TEST========= Only Admins Can View All Users
 router.get("/admin/users", verifyToken, checkRole(["admin"]), async (req, res) => {
