@@ -1,3 +1,5 @@
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 import request from "supertest";
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
@@ -88,5 +90,68 @@ describe("Auth API", () => {
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty("success", true);
     expect(res.body).toHaveProperty("message", "Logged out successfully");
+  });
+});
+
+describe("Password Reset API", () => {
+  let user, resetToken
+  beforeAll(async () => {
+    // Create a test user
+    user = await User.create({
+      name: "Test User",
+      email: "test1@example.com",
+      password: "Password123!",
+    });
+
+    // Generate a reset token
+    resetToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+  });
+
+  afterAll(async () => {});
+
+  it("Should reject invalid token", async () => {
+    const response = await request(app)
+      .post("/api/auth/reset-password/invalidtoken")
+      .send({ newPassword: "NewPassword123!" });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("Invalid or malformed token");
+  });
+
+  it("Should reset password successfully", async () => {
+    const response = await request(app)
+      .post(`/api/auth/reset-password/${resetToken}`)
+      .send({ newPassword: "NewPassword123!" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.message).toBe("Password reset successful");
+
+    // Verify that the password was hashed and updated
+    const updatedUser = await User.findById(user._id);
+    const isMatch = await bcrypt.compare(
+      "NewPassword123!",
+      updatedUser.password
+    );
+    expect(isMatch).toBe(true);
+  });
+
+  it("Should reject expired token", async () => {
+    // Generate an expired token
+    const expiredToken = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "-1s", // Expired immediately
+      }
+    );
+
+    const response = await request(app)
+      .post(`/api/auth/reset-password/${expiredToken}`)
+      .send({ newPassword: "AnotherPassword123!" });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("Token has expired");
   });
 });

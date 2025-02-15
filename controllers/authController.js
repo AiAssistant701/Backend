@@ -145,6 +145,11 @@ export const resetPassword = async (req, res, next) => {
 
     responseHandler(res, null, "Password reset successful");
   } catch (error) {
+    if (error.name === "JsonWebTokenError") {
+      return next({ statusCode: 400, message: "Invalid or malformed token" });
+    } else if (error.name === "TokenExpiredError") {
+      return next({ statusCode: 400, message: "Token has expired" });
+    }
     next(error);
   }
 };
