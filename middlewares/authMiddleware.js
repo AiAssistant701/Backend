@@ -5,7 +5,7 @@ const verifyToken = async (req, res, next) => {
   let token = req.cookies.jwt;
 
   if (!token) {
-    return next({ message: "Not authorized, no token" });
+    return next({ message: "Token is required!" });
   }
 
   try {
