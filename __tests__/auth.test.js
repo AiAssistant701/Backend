@@ -94,7 +94,7 @@ describe("Auth API", () => {
 });
 
 describe("Password Reset API", () => {
-  let user, resetToken
+  let user, resetToken;
   beforeAll(async () => {
     // Create a test user
     user = await User.create({
