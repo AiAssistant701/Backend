@@ -103,7 +103,7 @@ export const loginUser = async (req, res, next) => {
     if (!identity || !password) {
       return next({
         statusCode: 400,
-        message: "Email or password is required!",
+        message: "Identity or password is required!",
       });
     }
 
@@ -111,6 +111,13 @@ export const loginUser = async (req, res, next) => {
     const userField = isEmail ? "email" : "phoneNumber";
 
     const user = await User.findOne({ [userField]: identity });
+
+    if (!user.emailVerified) {
+      return next({
+        statusCode: 401,
+        message: "Please confirm your email to login!",
+      });
+    }
 
     if (user && (await user.matchPassword(password))) {
       generateToken(res, user._id);
