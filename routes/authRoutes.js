@@ -6,6 +6,7 @@ import {
   logoutUser,
   requestPasswordReset,
   resetPassword,
+  verifyEmail
 } from "../controllers/authController.js";
 import { body } from "express-validator";
 import verifyToken from "../middlewares/authMiddleware.js";
@@ -27,6 +28,7 @@ router.post(
 
 router.post("/login", loginUser);
 router.post("/logout", logoutUser);
+router.post("/verify-email/:token", verifyEmail);
 router.post("/forgot-password", requestPasswordReset);
 router.post("/reset-password/:token", resetPassword);
 

@@ -1,14 +1,15 @@
-import express from "express";
-import authMiddleware from "../middlewares/authMiddleware.js";
+import authRoutes from "./authRoutes.js";
+import userRoutes from "./userRoutes.js";
+import chatRoutes from "./chatRoutes.js";
+import dashboardRoutes from "./dashboardRoutes.js";
+import memoryRoutes from "./memoryRoutes.js";
+import whatsappRoutes from "./whatsappRoutes.js";
 
-const router = express.Router();
-
-router.get("/", (req, res) => {
-  res.json({ message: "Welcome to AI Automation API!" });
-});
-
-router.get("/protected", authMiddleware, (req, res) => {
-  res.json({ message: "You are authenticated!", user: req.user });
-});
-
-export default router;
+export {
+  authRoutes,
+  userRoutes,
+  chatRoutes,
+  dashboardRoutes,
+  memoryRoutes,
+  whatsappRoutes,
+};

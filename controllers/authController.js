@@ -1,9 +1,9 @@
-import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { transporter } from "../config/emailTransport.js";
 import { validationResult } from "express-validator";
 import responseHandler from "../middlewares/responseHandler.js";
+import { emailRegex, passwordRegex } from "../utils/constants.js";
 
 // Generate JWT Token
 const generateToken = (res, userId) => {
@@ -27,12 +27,13 @@ const generateResetToken = (userId) => {
 // @route   POST /api/auth/signup
 // @desc    Register a new user
 export const registerUser = async (req, res, next) => {
+  let user;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next({ statusCode: 400, message: errors.array()[0].msg });
   }
 
-  const { name, email, password, role } = req.body;
+  const { firstName, lastName, email, password, role } = req.body;
 
   try {
     let userExists = await User.findOne({ email });
@@ -41,18 +42,47 @@ export const registerUser = async (req, res, next) => {
       return next({ statusCode: 400, message: "User already exists" });
     }
 
-    const user = await User.create({
-      name,
+    user = await User.create({
+      name: `${firstName} ${lastName}` || "User",
+      firstName,
+      lastName,
       email,
       password,
       role: role || "user",
     });
 
     if (user) {
-      generateToken(res, user._id);
-      responseHandler(
+      user = user.toJSON();
+      jwt.sign(
+        {
+          id: user._id,
+        },
+        process.env.EMAIL_JWT_SECRET,
+        {
+          expiresIn: "1d",
+        },
+        (err, emailToken) => {
+          url = `http://localhost:5000/api/auth/verify-email/${emailToken}`;
+          const mailOptions = {
+            from: "danielidowu414@gmail.com",
+            to: "jorovod391@nastyx.com", // change to dynamic email (email)
+            subject: "Welcome to AI-Auto!",
+            html: `Welcome <b>${firstName}</b>,
+              Kindly confirm your email <a href=${url} target='_blank'>here</a>
+              `,
+          };
+
+          transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+              return next({ statusCode: 400, message: error });
+            }
+          });
+        }
+      );
+
+      return responseHandler(
         res,
-        { _id: user._id, name: user.name, email: user.email },
+        { _id: user.id, name: user.name, email: user.email },
         "User registered",
         201
       );
@@ -67,14 +97,24 @@ export const registerUser = async (req, res, next) => {
 // @route   POST /api/auth/login
 // @desc    Authenticate user & get token
 export const loginUser = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { identity, password } = req.body;
 
   try {
-    const user = await User.findOne({ email });
+    if (!identity || !password) {
+      return next({
+        statusCode: 400,
+        message: "Email or password is required!",
+      });
+    }
+
+    const isEmail = emailRegex.test(identity);
+    const userField = isEmail ? "email" : "phoneNumber";
+
+    const user = await User.findOne({ [userField]: identity });
 
     if (user && (await user.matchPassword(password))) {
       generateToken(res, user._id);
-      responseHandler(
+      return responseHandler(
         res,
         { _id: user._id, name: user.name, email: user.email },
         "User logged in"
@@ -94,7 +134,26 @@ export const logoutUser = (req, res) => {
     httpOnly: true,
     expires: new Date(0),
   });
-  responseHandler(res, null, "Logged out successfully");
+  return responseHandler(res, null, "Logged out successfully");
+};
+
+// @route   POST /api/auth/verify-email/:token
+// @desc    Verify a user's email
+export const verifyEmail = async (req, res, next) => {
+  const { token } = req.params;
+  jwt.verify(token, process.env.EMAIL_JWT_SECRET, async (err, user) => {
+    if (err) {
+      return next({ statusCode: 400, message: "Invalid email token!" });
+    }
+
+    await User.findByIdAndUpdate(user.id, {
+      $set: { emailVerified: true },
+    });
+
+    return responseHandler(res, null, "Your account has been confirmed!", 201);
+  });
+
+  /* res.redirect(FRONTEND_URL) */
 };
 
 // @route   POST /api/auth/forgot-password
@@ -113,14 +172,14 @@ export const requestPasswordReset = async (req, res, next) => {
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
     // Send email
-    await transporter.sendMail({
+    transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: user.email,
       subject: "Password Reset Request",
       html: `<p>Click <a href="${resetLink}">here</a> to reset your password. This link expires in 1 hour.</p>`,
     });
 
-    responseHandler(res, null, "Password reset link sent to email");
+    return responseHandler(res, null, "Password reset link sent to email");
   } catch (error) {
     next(error);
   }
@@ -143,7 +202,7 @@ export const resetPassword = async (req, res, next) => {
     user.password = newPassword;
     await user.save();
 
-    responseHandler(res, null, "Password reset successful");
+    return responseHandler(res, null, "Password reset successful");
   } catch (error) {
     if (error.name === "JsonWebTokenError") {
       return next({ statusCode: 400, message: "Invalid or malformed token" });

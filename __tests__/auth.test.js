@@ -35,12 +35,14 @@ afterAll(async () => {
 describe("Auth API", () => {
   let userData = {
     name: "Test User",
+    firstName: "John",
+    lastName: "Doe",
     email: "test@example.com",
     password: "Test1234",
   };
 
   it("should register a new user", async () => {
-    const res = await request(app).post("/api/auth/signup").send(userData);
+    const res = await request(app).post("/api/auth/signup").send(userData);    
     expect(res.statusCode).toBe(201);
     expect(res.body).toHaveProperty("success", true);
     expect(res.body.data).toHaveProperty("_id");
@@ -67,7 +69,7 @@ describe("Auth API", () => {
   it("should login with correct credentials", async () => {
     const res = await request(app)
       .post("/api/auth/login")
-      .send({ email: userData.email, password: userData.password });
+      .send({ identity: userData.email, password: userData.password });
 
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty("success", true);
@@ -78,7 +80,7 @@ describe("Auth API", () => {
   it("should not login with incorrect password", async () => {
     const res = await request(app)
       .post("/api/auth/login")
-      .send({ email: userData.email, password: "wrongpassword" });
+      .send({ identity: userData.email, password: "wrongpassword" });
 
     expect(res.statusCode).toBe(401);
     expect(res.body).toHaveProperty("success", false);
@@ -99,6 +101,8 @@ describe("Password Reset API", () => {
     // Create a test user
     user = await User.create({
       name: "Test User",
+      firstName: "John",
+    lastName: "Doe",
       email: "test1@example.com",
       password: "Password123!",
     });
