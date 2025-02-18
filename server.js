@@ -32,6 +32,8 @@ app.use(cookieParser());
 // Connect to Database
 connectDB();
 
+app.set("trust proxy", 1)
+
 // Rate limiter
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
