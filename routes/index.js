@@ -4,6 +4,7 @@ import chatRoutes from "./chatRoutes.js";
 import dashboardRoutes from "./dashboardRoutes.js";
 import memoryRoutes from "./memoryRoutes.js";
 import whatsappRoutes from "./whatsappRoutes.js";
+import aiRoutes from './aiRoutes.js'
 
 export {
   authRoutes,
@@ -12,4 +13,5 @@ export {
   dashboardRoutes,
   memoryRoutes,
   whatsappRoutes,
+  aiRoutes
 };

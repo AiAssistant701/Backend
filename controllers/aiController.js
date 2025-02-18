@@ -1,5 +1,5 @@
-import { aiOrchestrator } from "../services/aiOrchestratorService";
-import responseHandler from "../middlewares/responseHandler";
+import { aiOrchestrator } from "../services/aiOrchestratorService.js";
+import responseHandler from "../middlewares/responseHandler.js";
 
 const handleAIRequest = async (req, res, next) => {
   try {

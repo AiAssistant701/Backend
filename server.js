@@ -13,6 +13,7 @@ import {
   dashboardRoutes,
   memoryRoutes,
   whatsappRoutes,
+  aiRoutes
 } from "./routes/index.js";
 import rateLimit from "express-rate-limit";
 import errorHandler from "./middlewares/errorHandler.js";
@@ -50,6 +51,7 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/memory", memoryRoutes);
 app.use("/api/whatsapp", whatsappRoutes);
+app.use("/api/ai", aiRoutes);
 
 // Error Handling Middleware
 app.use(errorHandler);
