@@ -7,7 +7,7 @@ const WHATSAPP_API_URL = "https://graph.facebook.com/v16.0";
 const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN || "token";
 const WHATSAPP_PHONE_NUMBER_ID =
   process.env.WHATSAPP_PHONE_NUMBER_ID || "phone_id";
-const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || "verify_token";
+const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
 
 // Sends a message to a user via WhatsApp
 export const sendWhatsAppMessage = async (recipient, message) => {
@@ -44,7 +44,7 @@ export const verifyWebhook = (req, res) => {
 
   if (mode === "subscribe" && token === VERIFY_TOKEN) {
     console.log("Webhook verified successfully.");
-    responseHandler(res, { challenge }, "Webhook verified successfully");
+    res.status(200).send(challenge);
   } else {
     responseHandler(res, null, "Verification failed.", 403);
   }
