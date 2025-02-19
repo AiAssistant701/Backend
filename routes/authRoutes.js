@@ -1,4 +1,5 @@
 import express from "express";
+import passport from "passport";
 import User from "../models/User.js";
 import {
   registerUser,
@@ -32,6 +33,20 @@ router.post("/logout", logoutUser);
 router.post("/verify-email/:token", verifyEmail);
 router.post("/forgot-password", requestPasswordReset);
 router.post("/reset-password/:token", resetPassword);
+
+// =========GOOGLE AUTH=============
+router.get(
+  "/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+router.get(
+  "/google/callback",
+  passport.authenticate("google", { failureRedirect: "/login" }), 
+  (req, res) => {
+    res.redirect('/') // process.env.FRONTEND_URL
+  }
+);
 
 // =========TEST========= Only Admins Can View All Users
 router.get(
