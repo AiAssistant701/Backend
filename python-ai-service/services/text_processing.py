@@ -11,7 +11,20 @@ def summarize_text(text):
 
 def classify_text(text):
     """Classifies text into predefined categories."""
-    labels = ["AI", "Cybersecurity", "Finance", "Healthcare"]
+    labels = [
+  "research_analysis",
+  "message_processing",
+  "file_management",
+  "finance_analysis",
+  "email_management",
+  "meeting_scheduling",
+  "file_retrieval",
+  "market_research",
+  "quick_answers",
+  "report_generation",
+  "progress_tracking",
+  "health_reminders",
+]
     return classifier(text, labels)["labels"][0]
 
 def answer_question(question, context):

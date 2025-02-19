@@ -1,3 +1,6 @@
+import io
+import uvicorn
+from pydantic import BaseModel
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from services.text_processing import summarize_text, classify_text, answer_question
 from services.pdf_processing import extract_text_from_pdf
@@ -5,24 +8,25 @@ from services.embedding_service import get_text_embedding
 """ from services.speech_processing import convert_speech_to_text """
 from services.image_processing import extract_text_from_image
 """ from services.ai_decision_logging import log_ai_decision """
-import io
-import uvicorn
 
 app = FastAPI()
+
+class SummarizationRequest(BaseModel):
+    text: str
 
 @app.get("/")
 def home():
     return {"message": "AI Service Running"}
 
 @app.post("/summarize/")
-def summarize(text: str = Form(...)):
-    result = summarize_text(text)
+def summarize(request: SummarizationRequest):
+    result = summarize_text(request.text)
     # log_ai_decision("summarization", "Hugging Face BART", "Summarized text content")
     return {"summary": result}
 
 @app.post("/classify/")
-def classify(text: str = Form(...)):
-    result = classify_text(text)
+def classify(request: SummarizationRequest):
+    result = classify_text(request.text)
     # log_ai_decision("classification", "Hugging Face BART", "Classified text content")
     return {"classification": result}
 
