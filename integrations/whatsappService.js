@@ -1,5 +1,7 @@
 import axios from "axios";
 import responseHandler from "../middlewares/responseHandler.js";
+import { userIntent } from "../services/userIntentService.js";
+import { aiOrchestrator } from "../services/aiOrchestratorService.js";
 
 const WHATSAPP_API_URL = "https://graph.facebook.com/v16.0";
 const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN || "token";
@@ -64,13 +66,12 @@ export const receiveWhatsAppMessage = async (req, res, next) => {
             console.log(`Received WhatsApp message from ${sender}: ${text}`);
 
             // Intent
-            ///////////////////
-            
-            // Process AI Response (for now, echo back)
-            const aiResponse = `You said: ${text}`;
+            const taskType = await userIntent(text);
+
+            const aiResponse = await aiOrchestrator(taskType, text);
 
             // Send response to user
-            await sendWhatsAppMessage(sender, aiResponse);
+            await sendWhatsAppMessage(sender, aiResponse.response);
           }
         }
       }
