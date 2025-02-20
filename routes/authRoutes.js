@@ -34,7 +34,7 @@ router.post("/verify-email/:token", verifyEmail);
 router.post("/forgot-password", requestPasswordReset);
 router.post("/reset-password/:token", resetPassword);
 
-// =========GOOGLE AUTH=============
+// =========GOOGLE SIGN-IN AUTH=============
 router.get(
   "/google",
   passport.authenticate("google", { scope: ["profile", "email"] })

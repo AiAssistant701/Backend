@@ -23,6 +23,7 @@ import {
   whatsappRoutes,
   aiRoutes,
 } from "./routes/index.js";
+import { saveUserTokens, updateUserWithTokens } from "./usecases/users.js";
 
 dotenv.config();
 
@@ -73,11 +74,28 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: `${process.env.BACKEND_API}/api/auth/google/callback`,
+      scope: [
+        "profile",
+        "email",
+        "https://www.googleapis.com/auth/gmail.send",
+        "https://www.googleapis.com/auth/gmail.readonly"
+      ],
+      access_type: "offline",
+      prompt: "consent"
     },
-    (accessToken, refreshToken, profile, done) => {
-      // this is where we find or create a user in the db
-      console.log(profile);
-      return done(null, profile);
+    async (accessToken, refreshToken, profile, done) => {
+      const userData = {
+        googleId: profile.id,
+        email: profile.emails[0].value,
+        tokens: { accessToken, refreshToken }
+      };
+      const userTokens = await saveUserTokens(profile.id, userData.tokens);
+
+      if(!userTokens) {
+        await updateUserWithTokens(profile.emails[0].value, profile.id, userData.tokens)
+      }
+
+      return done(null, userData);
     }
   )
 );

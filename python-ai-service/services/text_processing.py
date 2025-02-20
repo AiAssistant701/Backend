@@ -16,6 +16,7 @@ def classify_text(text):
         "file_management",
         "finance_analysis",
         "email_management",
+        "send_email",
         "meeting_scheduling",
         "file_retrieval",
         "market_research",
@@ -30,8 +31,11 @@ def classify_text(text):
     
     # Post-processing: If email-related keywords are present, override "quick_answers"
     if best_label == "quick_answers":
-        email_keywords = ["email", "inbox", "attachment", "compose", "unread"]
-        if any(word in text.lower() for word in email_keywords):
+        get_email_keywords = ["email", "inbox", "attachment", "compose", "unread"]
+        send_email_keywords = ["email", "compose", "send"]
+        if any(word in text.lower() for word in send_email_keywords):
+            return "send_email"
+        if any(word in text.lower() for word in get_email_keywords):
             return "email_management"
     
     return best_label

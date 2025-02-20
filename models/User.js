@@ -31,6 +31,13 @@ const userSchema = new mongoose.Schema(
       index: true,
       sparse: true,
     },
+    googleId: {
+      type: String,
+    },
+    tokens: {
+      accessToken: { type: String },
+      refreshToken: { type: String },
+    },
     phoneNumberVerified: {
       type: Boolean,
       default: false,

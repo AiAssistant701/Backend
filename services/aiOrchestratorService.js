@@ -5,6 +5,7 @@ import { analyzeBankStatement } from "./financeService.js";
 import { manageEmailInbox, scheduleMeetings } from "./messagingService.js";
 import { retrieveFiles } from "./fileService.js";
 import { performResearch, provideQuickAnswers } from "./researchService.js";
+import { sendEmail } from "../integrations/gmailService.js";
 import {
   generateReports,
   trackProgress,
@@ -16,6 +17,7 @@ import {
   FILE_MANAGEMENT,
   FINANCE_ANALYSIS,
   EMAIL_MANAGEMENT,
+  SEND_EMAIL,
   MEETING_SCHEDULING,
   FILE_RETRIEVAL,
   MARKET_RESEARCH,
@@ -42,6 +44,14 @@ export const aiOrchestrator = async (taskType, payload) => {
 
     case EMAIL_MANAGEMENT:
       return await manageEmailInbox(payload);
+
+    case SEND_EMAIL:
+      return await sendEmail(
+        payload.googleId,
+        payload.to,
+        payload.subject,
+        payload.message
+      );
 
     case MEETING_SCHEDULING:
       return await scheduleMeetings(payload);

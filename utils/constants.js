@@ -6,6 +6,7 @@ export const MESSAGE_PROCESSING = "message_processing";
 export const FILE_MANAGEMENT = "file_management";
 export const FINANCE_ANALYSIS = "finance_analysis";
 export const EMAIL_MANAGEMENT = "email_management";
+export const SEND_EMAIL = "send_email";
 export const MEETING_SCHEDULING = "meeting_scheduling";
 export const FILE_RETRIEVAL = "file_retrieval";
 export const MARKET_RESEARCH = "market_research";
