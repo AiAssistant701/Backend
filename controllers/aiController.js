@@ -26,8 +26,6 @@ const handleAIRequest = async (req, res, next) => {
       payload = { ...payload, ...emailDetails };
     }
 
-    console.log(payload)
-
     const result = await aiOrchestrator(taskType, payload);
     return responseHandler(res, result, "AI Task Processed Successfully");
   } catch (error) {
