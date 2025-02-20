@@ -6,10 +6,14 @@ import { manageEmailInbox, scheduleMeetings } from "./messagingService.js";
 import { retrieveFiles } from "./fileService.js";
 import { performResearch, provideQuickAnswers } from "./researchService.js";
 import {
+  createCalendarEvent,
+  getUpcomingEvents,
+} from "../integrations/googleCalenderService.js";
+import {
   sendEmail,
   getUnreadEmails,
   searchEmails,
-  summarizeUnreadEmails
+  summarizeUnreadEmails,
 } from "../integrations/gmailService.js";
 import {
   generateReports,
@@ -21,12 +25,12 @@ import {
   MESSAGE_PROCESSING,
   FILE_MANAGEMENT,
   FINANCE_ANALYSIS,
-  EMAIL_MANAGEMENT,
   SEND_EMAIL,
   FETCH_UNREAD_EMAILS,
   SEARCH_EMAILS,
   SUMMARIZE_EMAILS,
   MEETING_SCHEDULING,
+  FETCH_UPCOMING_EVENTS,
   FILE_RETRIEVAL,
   MARKET_RESEARCH,
   QUICK_ANSWERS,
@@ -50,9 +54,6 @@ export const aiOrchestrator = async (taskType, payload) => {
     case FINANCE_ANALYSIS:
       return await analyzeBankStatement(payload);
 
-    case EMAIL_MANAGEMENT:
-      return await manageEmailInbox(payload);
-
     case SEND_EMAIL:
       return await sendEmail(
         payload.googleId,
@@ -71,7 +72,10 @@ export const aiOrchestrator = async (taskType, payload) => {
       return await summarizeUnreadEmails(payload.googleId);
 
     case MEETING_SCHEDULING:
-      return await scheduleMeetings(payload);
+      return await createCalendarEvent(payload.googleId, payload.eventDetails);
+
+    case FETCH_UPCOMING_EVENTS:
+      return await getUpcomingEvents(payload.googleId);
 
     case FILE_RETRIEVAL:
       return await retrieveFiles(payload);
