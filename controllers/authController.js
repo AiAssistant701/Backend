@@ -112,14 +112,14 @@ export const loginUser = async (req, res, next) => {
 
     const user = await User.findOne({ [userField]: identity });
 
-    if (!user.emailVerified) {
-      return next({
-        statusCode: 401,
-        message: "Please confirm your email to login!",
-      });
-    }
-
     if (user && (await user.matchPassword(password))) {
+      if (!user.emailVerified) {
+        return next({
+          statusCode: 401,
+          message: "Please confirm your email to login!",
+        });
+      }
+
       generateToken(res, user._id);
       return responseHandler(
         res,
