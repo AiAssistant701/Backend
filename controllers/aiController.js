@@ -9,7 +9,6 @@ const handleAIRequest = async (req, res, next) => {
     const { text } = req.body;
     // example text: Send an email to johndoe@example.com subject Meeting Update message The meeting is at 3 PM.
     const taskType = await userIntent(text);
-    console.log(taskType)
 
     let payload = {
       googleId: user.googleId,
@@ -27,7 +26,6 @@ const handleAIRequest = async (req, res, next) => {
       payload = { ...payload, ...emailDetails };
     } else if (taskType === "meeting_scheduling") {
       const eventDetails = await extractEventDetails(text);
-      console.log(eventDetails);
       if (!eventDetails) {
         return next({
           statusCode: 400,
