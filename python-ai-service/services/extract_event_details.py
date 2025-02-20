@@ -5,24 +5,36 @@ from datetime import datetime, timedelta
 def extract_event_details(text):
     """Extracts event details from natural language input."""
 
-    # Ensure dateparser prefers future dates
-    parsed_date = dateparser.parse(
-        text, 
-        settings={"PREFER_DATES_FROM": "future", "RELATIVE_BASE": datetime.now()}
-    )
+    # Manually detect relative dates
+    text_lower = text.lower()
+    today = datetime.today()
 
-    # Fallback: Manually detect weekday names if dateparser fails
+    if "tomorrow" in text_lower:
+        parsed_date = today + timedelta(days=1)
+    elif "next week" in text_lower:
+        parsed_date = today + timedelta(weeks=1)
+    else:
+        parsed_date = dateparser.parse(text, settings={"PREFER_DATES_FROM": "future", "RELATIVE_BASE": today})
+
+    # Fallback: Detect weekday names (Monday-Friday)
     if not parsed_date:
         weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
         for day in weekdays:
-            if day in text.lower():
-                today = datetime.today()
+            if day in text_lower:
                 days_ahead = (weekdays.index(day) - today.weekday()) % 7
                 parsed_date = today + timedelta(days=days_ahead)
                 break
 
     if not parsed_date:
         return {"error": "Could not detect a valid date or time."}
+
+    # Extract time (default to 9 AM if no time is given)
+    time_match = re.search(r"(\d{1,2}(:\d{2})?\s?(AM|PM)?)", text, re.IGNORECASE)
+    if time_match:
+        parsed_time = dateparser.parse(time_match.group(1))
+        parsed_date = parsed_date.replace(hour=parsed_time.hour, minute=parsed_time.minute)
+    else:
+        parsed_date = parsed_date.replace(hour=9, minute=0)  # Default 9 AM
 
     # Extract duration (default: 1 hour)
     duration_match = re.search(r"(\d+)\s?(hour|minute|hr|min|h|m)", text, re.IGNORECASE)
