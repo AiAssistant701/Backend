@@ -67,6 +67,8 @@ export const receiveWhatsAppMessage = async (req, res, next) => {
             
             const taskType = await userIntent(text); // user intent
 
+            // fetch user by phone number
+
             const aiResponse = await aiOrchestrator(taskType, text);
 
             // Send response to user

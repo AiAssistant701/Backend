@@ -18,7 +18,7 @@ def classify_text(text):
         "email_management",
         "send_email",
         "fetch_unread_emails",
-        "summarize_email", 
+        "summarize_emails", 
         "search_emails", 
         "meeting_scheduling",
         "file_retrieval",
@@ -29,27 +29,32 @@ def classify_text(text):
         "health_reminders",
     ]
     
+    # Get classification results from the NLP model
     result = classifier(text, labels)
     best_label = result["labels"][0]
-    
-    # Email-related keyword detection
-    send_email_keywords = ["send", "compose", "draft", "mail", "email"]
-    fetch_email_keywords = ["check", "read", "inbox", "unread", "latest", "emails"]
-    summarize_email_keywords = ["summarize", "summary", "brief", "shorten", "email"]
-    search_email_keywords = ["search", "email"]
+    confidence_score = result["scores"][0]
+
+    # Define email-related keyword sets with **contextual specificity**
+    send_email_keywords = ["send", "compose", "draft", "write", "email to", "message to"]
+    fetch_email_keywords = ["check inbox", "check emails", "read latest", "unread emails", "latest emails"]
+    summarize_email_keywords = ["summarize", "summary of", "brief of", "shorten", "email summary"]
+    search_email_keywords = ["find email", "search email", "look up email"]
 
     text_lower = text.lower()
-    
-    if any(word in text_lower for word in send_email_keywords):
-        return "send_email"
-    if any(word in text_lower for word in summarize_email_keywords):
-        return "summarize_email"
-    if any(word in text_lower for word in fetch_email_keywords):
-        return "fetch_unread_emails"
-    if any(word in text_lower for word in search_email_keywords):
-        return "search_emails"
+
+    # Apply keyword-based classification ONLY IF confidence is low (< 0.6)
+    if confidence_score < 0.6:
+        if any(phrase in text_lower for phrase in fetch_email_keywords):
+            return "fetch_unread_emails"
+        if any(phrase in text_lower for phrase in summarize_email_keywords):
+            return "summarize_emails"
+        if any(phrase in text_lower for phrase in search_email_keywords):
+            return "search_emails"
+        if any(phrase in text_lower for phrase in send_email_keywords):
+            return "send_email"
 
     return best_label
+
 
 
 
