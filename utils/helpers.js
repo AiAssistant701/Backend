@@ -1,7 +1,9 @@
 export const extractEmailDetails = (text) => {
   const toMatch = text.match(/to ([\w.-]+@[\w.-]+\.\w+)/);
-  const subjectMatch = text.match(/subject (.+?) message/i);
-  const messageMatch = text.match(/message (.+)$/i);
+  const subjectMatch =
+    text.match(/subject (.+?) message/i) || "Unknown Subject";
+  const messageMatch =
+    text.match(/message (.+)$/i) || text.match(/about (.+)$/i);
 
   if (toMatch && subjectMatch && messageMatch) {
     return {

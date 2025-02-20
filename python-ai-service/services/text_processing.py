@@ -17,6 +17,9 @@ def classify_text(text):
         "finance_analysis",
         "email_management",
         "send_email",
+        "fetch_unread_emails",
+        "summarize_email", 
+        "search_emails", 
         "meeting_scheduling",
         "file_retrieval",
         "market_research",
@@ -29,16 +32,25 @@ def classify_text(text):
     result = classifier(text, labels)
     best_label = result["labels"][0]
     
-    # Post-processing: If email-related keywords are present, override "quick_answers"
-    if best_label == "quick_answers":
-        get_email_keywords = ["email", "inbox", "attachment", "compose", "unread"]
-        send_email_keywords = ["email", "compose", "send"]
-        if any(word in text.lower() for word in send_email_keywords):
-            return "send_email"
-        if any(word in text.lower() for word in get_email_keywords):
-            return "email_management"
+    # Email-related keyword detection
+    send_email_keywords = ["send", "compose", "draft", "mail", "email"]
+    fetch_email_keywords = ["check", "read", "inbox", "unread", "latest", "emails"]
+    summarize_email_keywords = ["summarize", "summary", "brief", "shorten", "email"]
+    search_email_keywords = ["search", "email"]
+
+    text_lower = text.lower()
     
+    if any(word in text_lower for word in send_email_keywords):
+        return "send_email"
+    if any(word in text_lower for word in summarize_email_keywords):
+        return "summarize_email"
+    if any(word in text_lower for word in fetch_email_keywords):
+        return "fetch_unread_emails"
+    if any(word in text_lower for word in search_email_keywords):
+        return "search_emails"
+
     return best_label
+
 
 
 def answer_question(question, context):
