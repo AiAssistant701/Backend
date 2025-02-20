@@ -1,5 +1,8 @@
 import User from "../models/User.js";
 
+// =======================
+// save user google tokens
+// =======================
 export const saveUserTokens = async (googleId, tokens) => {
   const user = await User.findOneAndUpdate(
     { googleId },
@@ -15,6 +18,9 @@ export const getUserTokens = async (googleId) => {
   return user ? user.tokens : null;
 };
 
+// =======================
+// update user with google tokens
+// =======================
 export const updateUserWithTokens = async (email, googleId, tokens) => {
   await User.findOneAndUpdate(
     { email },

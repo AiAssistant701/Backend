@@ -1,15 +1,15 @@
 import { google } from "googleapis";
 import { getUserTokens } from "../usecases/users.js";
 
-//////////////////////
+// =======================
 // to send email
-//////////////////////
+// =======================
 export const sendEmail = async (googleId, to, subject, message) => {
   const tokens = await getUserTokens(googleId);
   if (!tokens) throw new Error("No Gmail authentication found for user.");
 
   const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials(tokens);
+  oauth2Client.setCredentials({ access_token: tokens.accessToken }); // remember to fix refresh_token issue
 
   const gmail = google.gmail({ version: "v1", auth: oauth2Client });
 
@@ -33,9 +33,9 @@ export const sendEmail = async (googleId, to, subject, message) => {
   return response.data;
 };
 
-//////////////////////
+// =======================
 // get unread emails
-//////////////////////
+// =======================
 export const getUnreadEmails = async (googleId) => {
   const tokens = await getUserTokens(googleId);
   if (!tokens) throw new Error("No Gmail authentication found for user.");
@@ -55,9 +55,9 @@ export const getUnreadEmails = async (googleId) => {
   return await fetchEmailDetails(gmail, messages);
 };
 
-//////////////////////
+// =======================
 // Search for emails matching the query
-//////////////////////
+// =======================
 export const searchEmails = async (googleId, query) => {
   const tokens = await getUserTokens(googleId);
   if (!tokens) throw new Error("No Gmail authentication found for user.");
@@ -77,9 +77,9 @@ export const searchEmails = async (googleId, query) => {
   return await fetchEmailDetails(gmail, messages);
 };
 
-//////////////////////
+// =======================
 // fetch email details
-//////////////////////
+// =======================
 const fetchEmailDetails = async (gmail, messages) => {
   const emailDetails = [];
 
@@ -103,15 +103,15 @@ const fetchEmailDetails = async (gmail, messages) => {
   return emailDetails;
 };
 
-//////////////////////
+// =======================
 // Summarize each email
-//////////////////////
+// =======================
 export const summarizeUnreadEmails = async (googleId) => {
   const tokens = await getUserTokens(googleId);
   if (!tokens) throw new Error("No Gmail authentication found for user.");
 
   const emails = await getUnreadEmails(googleId);
-  
+
   const summarizedEmails = await Promise.all(
     emails.map(async (email) => {
       const response = await axios.post(`${PYTHON_AI_URL}/summarize_email/`, {
