@@ -114,7 +114,7 @@ export const summarizeUnreadEmails = async (googleId) => {
 
   const summarizedEmails = await Promise.all(
     emails.map(async (email) => {
-      const response = await axios.post(`${PYTHON_AI_URL}/summarize_email/`, {
+      const response = await axios.post(`${process.env.PYTHON_AI_URL}/summarize/`, {
         text: email.snippet,
       });
 

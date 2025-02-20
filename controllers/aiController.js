@@ -1,7 +1,7 @@
+import { extractEmailDetails, extractEventDetails } from "../utils/helpers.js";
+import { userIntent } from "../services/userIntentService.js";
 import { aiOrchestrator } from "../services/aiOrchestratorService.js";
 import responseHandler from "../middlewares/responseHandler.js";
-import { userIntent } from "../services/userIntentService.js";
-import { extractEmailDetails } from "../utils/helpers.js";
 
 const handleAIRequest = async (req, res, next) => {
   try {
@@ -24,6 +24,17 @@ const handleAIRequest = async (req, res, next) => {
       }
 
       payload = { ...payload, ...emailDetails };
+    } else if (taskType === "meeting_scheduling") {
+      const eventDetails = await extractEventDetails(text);
+      console.log(eventDetails);
+      if (!eventDetails) {
+        return next({
+          statusCode: 400,
+          message: "Could not extract event details.",
+        });
+      }
+
+      payload = { ...payload, eventDetails };
     }
 
     const result = await aiOrchestrator(taskType, payload);
