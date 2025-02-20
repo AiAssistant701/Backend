@@ -5,10 +5,11 @@ from datetime import datetime, timedelta
 def extract_event_details(text):
     """Extracts event details from natural language input."""
 
-    # Manually detect relative dates
+    # Ensure dateparser prefers future dates
     text_lower = text.lower()
     today = datetime.today()
 
+    # Manually detect relative dates
     if "tomorrow" in text_lower:
         parsed_date = today + timedelta(days=1)
     elif "next week" in text_lower:
@@ -34,7 +35,7 @@ def extract_event_details(text):
         parsed_time = dateparser.parse(time_match.group(1))
         parsed_date = parsed_date.replace(hour=parsed_time.hour, minute=parsed_time.minute)
     else:
-        parsed_date = parsed_date.replace(hour=9, minute=0)  # Default 9 AM
+        parsed_date = parsed_date.replace(hour=9, minute=0)  # Default to 9 AM
 
     # Extract duration (default: 1 hour)
     duration_match = re.search(r"(\d+)\s?(hour|minute|hr|min|h|m)", text, re.IGNORECASE)
@@ -48,8 +49,8 @@ def extract_event_details(text):
         elif "hour" in duration_unit or "hr" in duration_unit or "h" == duration_unit:
             duration = timedelta(hours=duration_value)
 
-    # Extract event summary
-    summary_match = re.search(r"(meeting|call|appointment|event|conference)\s?(with|about)?\s?([a-zA-Z\s]+)?", text, re.IGNORECASE)
+    # **Fix Summary Extraction**
+    summary_match = re.search(r"(meeting|call|appointment|event|conference)\s?(with|about)?\s?([a-zA-Z\s]+?)(?=\s(?:tomorrow|next|on|at|for|in|by|from|this|that|the|a|an|my|our|your|their|his|her|its|which|who|whom|whose|when|where|why|how|what|all))?", text, re.IGNORECASE)
     summary = summary_match.group(3).strip() if summary_match and summary_match.group(3) else "Untitled Event"
 
     # Extract event description
