@@ -64,9 +64,8 @@ export const receiveWhatsAppMessage = async (req, res, next) => {
             const text = message.text?.body || "";
 
             console.log(`Received WhatsApp message from ${sender}: ${text}`);
-
-            // Intent
-            const taskType = await userIntent(text);
+            
+            const taskType = await userIntent(text); // user intent
 
             const aiResponse = await aiOrchestrator(taskType, text);
 
