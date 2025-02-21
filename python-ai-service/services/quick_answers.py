@@ -82,6 +82,7 @@ def general_knowledge_model(question):
     Returns answer string or None if confidence is low.
     """
     try:
+        print(f"Question: {question}")
         # For general knowledge questions, directly format them for T5
         formatted_question = f"answer: {question}"
         
