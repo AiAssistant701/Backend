@@ -234,10 +234,3 @@ def classify_text(text):
     
     # Final fallback: Use model prediction
     return best_label
-
-
-
-
-def answer_question(question, context):
-    """Performs question answering based on provided context."""
-    return qa_pipeline(question=question, context=context)["answer"]

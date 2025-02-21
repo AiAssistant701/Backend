@@ -54,7 +54,7 @@ export const aiOrchestrator = async (taskType, payload) => {
     case FINANCE_ANALYSIS:
       return await analyzeBankStatement(payload);
 
-    case SEND_EMAIL:
+    case SEND_EMAIL: //
       return await sendEmail(
         payload.googleId,
         payload.to,
@@ -62,19 +62,19 @@ export const aiOrchestrator = async (taskType, payload) => {
         payload.message
       );
 
-    case FETCH_UNREAD_EMAILS:
+    case FETCH_UNREAD_EMAILS: //
       return await getUnreadEmails(payload.googleId);
 
-    case SEARCH_EMAILS:
+    case SEARCH_EMAILS: //
       return await searchEmails(payload.googleId, payload.query);
 
-    case SUMMARIZE_EMAILS:
+    case SUMMARIZE_EMAILS: //
       return await summarizeUnreadEmails(payload.googleId);
 
-    case MEETING_SCHEDULING:
+    case MEETING_SCHEDULING: //
       return await createCalendarEvent(payload.googleId, payload.eventDetails);
 
-    case FETCH_UPCOMING_EVENTS:
+    case FETCH_UPCOMING_EVENTS: //
       return await getUpcomingEvents(payload.googleId);
 
     case FILE_RETRIEVAL:
@@ -83,8 +83,8 @@ export const aiOrchestrator = async (taskType, payload) => {
     case MARKET_RESEARCH:
       return await performResearch(payload);
 
-    case QUICK_ANSWERS:
-      return await provideQuickAnswers(payload);
+    case QUICK_ANSWERS: // ~~~~~~~~~~~~~~~~~~~
+      return await provideQuickAnswers(payload.query);
 
     case REPORT_GENERATION:
       return await generateReports(payload);

@@ -1,3 +1,5 @@
+import axios from "axios";
+
 export const processResearchPaper = async (data) => {
   // Implement NLP summarization, classification, and entity extraction
   return { message: "Research paper processed", response: data };
@@ -10,5 +12,12 @@ export const performResearch = async (query) => {
 
 export const provideQuickAnswers = async (query) => {
   // Implement quick answer retrieval from AI models
-  return { message: "Quick answer provided", response: query };
+  const response = await axios.post(`${process.env.PYTHON_AI_URL}/qa/`, {
+    question: "Who developed the theory of relativity?",
+    context:
+      "t",
+  });
+
+  console.log(response.data);
+  return { message: "Quick answer provided", response: response.data.answer };
 };

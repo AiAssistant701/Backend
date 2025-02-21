@@ -19,5 +19,5 @@ export const extractEmailDetails = (text) => {
 
 export const extractEventDetails = async (text) => {
   const response = await axios.post(`${process.env.PYTHON_AI_URL}/extract-event/`, { text });
-  return response.data.Event;
+  return response.data.event;
 };

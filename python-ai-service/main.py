@@ -1,12 +1,14 @@
 import io
 import uvicorn
+from typing import Optional
 from pydantic import BaseModel
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
-from services.text_processing import summarize_text, classify_text, answer_question
+from services.text_processing import summarize_text, classify_text
 from services.pdf_processing import extract_text_from_pdf
 from services.embedding_service import get_text_embedding
 from services.image_processing import extract_text_from_image
 from services.extract_event_details import extract_event_details
+from services.quick_answers import get_embedding, pinecone_index, answer_question
 """ from services.speech_processing import convert_speech_to_text """
 """ from services.ai_decision_logging import log_ai_decision """
 
@@ -14,6 +16,19 @@ app = FastAPI()
 
 class RequestData(BaseModel):
     text: str
+
+class QuestionRequest(BaseModel):
+    question: str
+    context: Optional[str] = None
+
+class AnswerResponse(BaseModel):
+    answer: str
+    source: str
+    context_used: Optional[str] = None
+
+class KnowledgeBaseItem(BaseModel):
+    text: str
+    metadata: Optional[dict] = None
 
 @app.get("/")
 def home():
@@ -35,13 +50,42 @@ def classify(request: RequestData):
 def extract_event(request: RequestData):
     result = extract_event_details(request.text)
     # log_ai_decision("event", "Hugging Face BART", "Classified text content")
-    return {"Event": result}
+    return {"event": result}
 
-@app.post("/qa/")
-def question_answer(question: str = Form(...), context: str = Form(...)):
-    result = answer_question(question, context)
-    # log_ai_decision("question_answering", "Hugging Face DistilBERT", "Answered user question")
-    return {"answer": result}
+@app.post("/qa/", response_model=AnswerResponse)
+async def get_answer(request: QuestionRequest):
+    """
+    Get answer to a question, trying multiple sources.
+    Optionally provide context if you have specific information.
+    """
+    if not request.question or len(request.question.strip()) < 3:
+        raise HTTPException(status_code=400, detail="Question must be at least 3 characters long")
+        
+    result = answer_question(request.question, request.context)
+    return result
+
+@app.post("/add-to-knowledge-base/")
+async def add_to_knowledge_base(item: KnowledgeBaseItem):
+    """Add new information to the Pinecone knowledge base"""
+    try:
+        # Generate an embedding for the text
+        vector = get_embedding(item.text)
+        
+        # Create metadata (including the full text for retrieval)
+        metadata = item.metadata or {}
+        metadata["text"] = item.text
+        
+        # Generate a unique ID (simple hash in this example)
+        item_id = str(abs(hash(item.text)))
+        
+        # Upsert to Pinecone
+        pinecone_index.upsert(
+            vectors=[(item_id, vector, metadata)]
+        )
+        
+        return {"status": "success", "id": item_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to add to knowledge base: {str(e)}")
 
 @app.post("/extract_pdf/")
 def extract_pdf(file: UploadFile = File(...)):
