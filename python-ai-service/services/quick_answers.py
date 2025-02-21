@@ -1,8 +1,10 @@
 import os
+import requests
 from pinecone import Pinecone, ServerlessSpec
 from dotenv import load_dotenv
 from transformers import pipeline
 from fastapi import FastAPI, HTTPException
+from huggingface_hub import InferenceClient
 from sentence_transformers import SentenceTransformer
 
 load_dotenv() 
@@ -31,8 +33,8 @@ def init_pinecone():
             dimension=embedding_model.get_sentence_embedding_dimension(),
             metric="cosine",
             spec=ServerlessSpec(
-                cloud=os.getenv("PINECONE_CLOUD"),  # 'aws' or 'gcp'
-                region=os.getenv("PINECONE_REGION")  # e.g., 'us-west-2'
+                cloud=os.getenv("PINECONE_CLOUD"),
+                region=os.getenv("PINECONE_REGION")
             )
         )
     
@@ -82,17 +84,25 @@ def general_knowledge_model(question):
     Returns answer string or None if confidence is low.
     """
     try:
-        print(f"Question: {question}")
-        # For general knowledge questions, directly format them for T5
-        formatted_question = f"answer: {question}"
-        
-        # Generate response using T5 model with more tokens
-        response = general_qa_model(formatted_question, max_length=150)[0]['generated_text']
-        
-        # Basic validation - ensure we got something substantial
-        if len(response.strip()) > 15:
-            return response
-        return None
+        client = InferenceClient(
+	    provider="hf-inference",
+	    api_key=os.getenv("HUGGINGFACE_TOKEN")
+        )
+
+        messages = [
+            {
+                "role": "user",
+                "content": question
+            }
+        ]
+
+        completion = client.chat.completions.create(
+            model="google/gemma-2-2b-it", 
+            messages=messages, 
+            max_tokens=500,
+        )
+
+        return completion.choices[0].message.content
     except Exception as e:
         print(f"General knowledge model error: {e}")
         return None
