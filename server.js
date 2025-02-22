@@ -16,11 +16,9 @@ import connectDB from "./config/db.js";
 import apiRoutes from "./routes/index.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import {
-  saveUserTokens,
-  updateUserWithTokens,
-  getUserByEmail,
-  createGoogleUser,
-} from "./usecases/users.js";
+  googleStrategyConfig,
+  handleGoogleAuth,
+} from "./utils/strategy/googleStrategy.js";
 
 dotenv.config();
 
@@ -65,54 +63,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Google OAuth Strategy
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `${process.env.BACKEND_API}/api/v1/auth/google/callback`,
-      scope: [
-        "profile",
-        "email",
-        "https://www.googleapis.com/auth/gmail.send",
-        "https://www.googleapis.com/auth/gmail.readonly",
-        "https://www.googleapis.com/auth/calendar.events",
-      ],
-      access_type: "offline",
-      prompt: "consent",
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      const user = await getUserByEmail(profile.emails[0].value);
-
-      if (!user) {
-        const newUser = await createGoogleUser(
-          profile,
-          accessToken,
-          refreshToken
-        );
-
-        if (!newUser) {
-          return done(null, false, { message: "Failed to create user" });
-        }
-
-        return done(null, newUser);
-      }
-
-      const userData = {
-        googleId: user.googleId,
-        email: user.email,
-        tokens: {
-          accessToken: user.tokens.accessToken,
-          refreshToken: user.tokens.refreshToken,
-        },
-      };
-
-      await saveUserTokens(userData.googleId, userData.tokens);
-
-      return done(null, userData);
-    }
-  )
-);
+passport.use(new GoogleStrategy(googleStrategyConfig, handleGoogleAuth));
 
 // Serialize and Deserialize User
 passport.serializeUser((user, done) => {
