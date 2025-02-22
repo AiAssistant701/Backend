@@ -13,9 +13,7 @@ export const performResearch = async (query) => {
 export const provideQuickAnswers = async (query) => {
   // Implement quick answer retrieval from AI models
   const response = await axios.post(`${process.env.PYTHON_AI_URL}/qa/`, {
-    question: "Who developed the theory of relativity?",
-    context:
-      "t",
+    question: query
   });
 
   console.log(response.data);
