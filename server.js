@@ -13,16 +13,8 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
 // Internal Imports
 import connectDB from "./config/db.js";
+import apiRoutes from "./routes/index.js";
 import errorHandler from "./middlewares/errorHandler.js";
-import {
-  authRoutes,
-  userRoutes,
-  chatRoutes,
-  dashboardRoutes,
-  memoryRoutes,
-  whatsappRoutes,
-  aiRoutes,
-} from "./routes/index.js";
 import { saveUserTokens, updateUserWithTokens } from "./usecases/users.js";
 
 dotenv.config();
@@ -73,7 +65,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `${process.env.BACKEND_API}/api/auth/google/callback`,
+      callbackURL: `${process.env.BACKEND_API}/api/v1/auth/google/callback`,
       scope: [
         "profile",
         "email",
@@ -118,13 +110,7 @@ app.get("/", (req, res) => {
 // ======================
 // Routes
 // ======================
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/chat", chatRoutes);
-app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/memory", memoryRoutes);
-app.use("/api/whatsapp", whatsappRoutes);
-app.use("/api/ai", aiRoutes);
+app.use('/api', apiRoutes)
 
 // ======================
 // Error Handling

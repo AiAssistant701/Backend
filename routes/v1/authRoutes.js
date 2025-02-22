@@ -1,17 +1,17 @@
 import express from "express";
 import passport from "passport";
-import User from "../models/User.js";
+import User from "../../models/User.js";
 import {
   registerUser,
   loginUser,
   logoutUser,
   requestPasswordReset,
   resetPassword,
-  verifyEmail
-} from "../controllers/authController.js";
+  verifyEmail,
+} from "../../controllers/authController.js";
 import { body } from "express-validator";
-import verifyToken from "../middlewares/authMiddleware.js";
-import { checkRole } from "../middlewares/rolesMiddleware.js";
+import verifyToken from "../../middlewares/authMiddleware.js";
+import { checkRole } from "../../middlewares/rolesMiddleware.js";
 
 const router = express.Router();
 
@@ -42,9 +42,9 @@ router.get(
 
 router.get(
   "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }), 
+  passport.authenticate("google", { failureRedirect: "/login" }),
   (req, res) => {
-    res.redirect('/') // process.env.FRONTEND_URL
+    res.redirect("/"); // process.env.FRONTEND_URL
   }
 );
 
