@@ -15,7 +15,12 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import connectDB from "./config/db.js";
 import apiRoutes from "./routes/index.js";
 import errorHandler from "./middlewares/errorHandler.js";
-import { saveUserTokens, updateUserWithTokens } from "./usecases/users.js";
+import {
+  saveUserTokens,
+  updateUserWithTokens,
+  getUserByEmail,
+  createGoogleUser,
+} from "./usecases/users.js";
 
 dotenv.config();
 
@@ -71,22 +76,38 @@ passport.use(
         "email",
         "https://www.googleapis.com/auth/gmail.send",
         "https://www.googleapis.com/auth/gmail.readonly",
-         "https://www.googleapis.com/auth/calendar.events"
+        "https://www.googleapis.com/auth/calendar.events",
       ],
       access_type: "offline",
-      prompt: "consent"
+      prompt: "consent",
     },
     async (accessToken, refreshToken, profile, done) => {
-      const userData = {
-        googleId: profile.id,
-        email: profile.emails[0].value,
-        tokens: { accessToken, refreshToken }
-      };
-      const userTokens = await saveUserTokens(profile.id, userData.tokens);
+      const user = await getUserByEmail(profile.emails[0].value);
 
-      if(!userTokens) {
-        await updateUserWithTokens(profile.emails[0].value, profile.id, userData.tokens)
+      if (!user) {
+        const newUser = await createGoogleUser(
+          profile,
+          accessToken,
+          refreshToken
+        );
+
+        if (!newUser) {
+          return done(null, false, { message: "Failed to create user" });
+        }
+
+        return done(null, newUser);
       }
+
+      const userData = {
+        googleId: user.googleId,
+        email: user.email,
+        tokens: {
+          accessToken: user.tokens.accessToken,
+          refreshToken: user.tokens.refreshToken,
+        },
+      };
+
+      await saveUserTokens(userData.googleId, userData.tokens);
 
       return done(null, userData);
     }
@@ -104,13 +125,13 @@ passport.deserializeUser((user, done) => {
 
 // ========GOOGLE LOGIN TEST=========
 app.get("/", (req, res) => {
-  res.send("<a href='/api/auth/google'>Login with Google</a>");
+  res.send("<a href='/api/v1/auth/google'>Login with Google</a>");
 });
 
 // ======================
 // Routes
 // ======================
-app.use('/api', apiRoutes)
+app.use("/api", apiRoutes);
 
 // ======================
 // Error Handling
