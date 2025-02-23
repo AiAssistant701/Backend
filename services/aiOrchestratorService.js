@@ -15,6 +15,7 @@ import {
   searchEmails,
   summarizeUnreadEmails,
 } from "../integrations/gmailService.js";
+import { uploadFileToGoogleDrive } from "../integrations/files/googleDriveService.js";
 import {
   generateReports,
   trackProgress,
@@ -23,7 +24,7 @@ import {
 import {
   RESEARCH_ANALYSIS,
   MESSAGE_PROCESSING,
-  FILE_MANAGEMENT,
+  UPLOAD_FILE,
   FINANCE_ANALYSIS,
   SEND_EMAIL,
   FETCH_UNREAD_EMAILS,
@@ -48,11 +49,11 @@ export const aiOrchestrator = async (taskType, payload) => {
     case MESSAGE_PROCESSING:
       return await processMessage(payload);
 
-    case FILE_MANAGEMENT:
-      return await organizeFiles(payload);
-
     case FINANCE_ANALYSIS:
       return await analyzeBankStatement(payload);
+
+    case UPLOAD_FILE:
+      return await uploadFileToGoogleDrive(payload.googleId, payload.filePath, payload.fileName);
 
     case SEND_EMAIL: //
       return await sendEmail(

@@ -25,7 +25,7 @@ def classify_text(text):
     labels = [
         "research_analysis",
         "message_processing",
-        "file_management",
+        "upload_file",
         "finance_analysis",
         "send_email",
         "fetch_unread_emails",

@@ -3,7 +3,7 @@ export const passwordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 export const RESEARCH_ANALYSIS = "research_analysis";
 export const MESSAGE_PROCESSING = "message_processing";
-export const FILE_MANAGEMENT = "file_management";
+export const UPLOAD_FILE = "upload_file";
 export const FINANCE_ANALYSIS = "finance_analysis";
 export const SEND_EMAIL = "send_email";
 export const FETCH_UNREAD_EMAILS = "fetch_unread_emails";

@@ -1,7 +1,7 @@
-import { extractEmailDetails, extractEventDetails } from "../utils/helpers.js";
 import { userIntent } from "../services/userIntentService.js";
-import { aiOrchestrator } from "../services/aiOrchestratorService.js";
 import responseHandler from "../middlewares/responseHandler.js";
+import { aiOrchestrator } from "../services/aiOrchestratorService.js";
+import { extractEmailDetails, extractEventDetails } from "../utils/helpers.js";
 
 const handleAIRequest = async (req, res, next) => {
   try {
@@ -36,8 +36,20 @@ const handleAIRequest = async (req, res, next) => {
       }
 
       payload = { ...payload, eventDetails };
-    } else if(taskType === "quick_answers") {
+    } else if (taskType === "quick_answers") {
       payload = { ...payload, query: text };
+    } else if (taskType === "upload_file") {
+      // Ensure file is uploaded using multer
+      if (!req.file) {
+        return next({ statusCode: 400, message: "No file uploaded." });
+      }
+
+      // Attach file details to payload
+      payload = {
+        ...payload,
+        filePath: req.file.path,
+        fileName: req.file.originalname,
+      };
     }
 
     const result = await aiOrchestrator(taskType, payload);
