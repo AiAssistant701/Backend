@@ -2,6 +2,13 @@ import { userIntent } from "../services/userIntentService.js";
 import responseHandler from "../middlewares/responseHandler.js";
 import { aiOrchestrator } from "../services/aiOrchestratorService.js";
 import { extractEmailDetails, extractEventDetails } from "../utils/helpers.js";
+import {
+  SEND_EMAIL,
+  MEETING_SCHEDULING,
+  QUICK_ANSWERS,
+  UPLOAD_FILE,
+  RETRIEVE_FILE,
+} from "../utils/constants.js";
 
 const handleAIRequest = async (req, res, next) => {
   try {
@@ -15,42 +22,57 @@ const handleAIRequest = async (req, res, next) => {
       googleId: user.googleId,
     };
 
-    if (taskType === "send_email") {
-      const emailDetails = extractEmailDetails(text);
-      if (!emailDetails) {
-        return next({
-          statusCode: 400,
-          message: "Could not extract email details.",
-        });
-      }
+    switch (taskType) {
+      case SEND_EMAIL:
+        const emailDetails = extractEmailDetails(text);
+        if (!emailDetails) {
+          return next({
+            statusCode: 400,
+            message: "Could not extract email details.",
+          });
+        }
 
-      payload = { ...payload, ...emailDetails };
-    } else if (taskType === "meeting_scheduling") {
-      const eventDetails = await extractEventDetails(text);
-      console.log("eventDetails", eventDetails);
-      if (!eventDetails) {
-        return next({
-          statusCode: 400,
-          message: "Could not extract event details.",
-        });
-      }
+        payload = { ...payload, ...emailDetails };
 
-      payload = { ...payload, eventDetails };
-    } else if (taskType === "quick_answers") {
-      payload = { ...payload, query: text };
-    } else if (taskType === "upload_file") {
-      if (!req.file) {
-        return next({ statusCode: 400, message: "No file uploaded." });
-      }
+        break;
 
-      // Attach file details to payload
-      payload = {
-        ...payload,
-        filePath: req.file.path,
-        fileName: req.file.originalname,
-      };
-    } else if (taskType === "retrieve_file") {
-      payload = { ...payload, query: text };
+      case MEETING_SCHEDULING:
+        const eventDetails = await extractEventDetails(text);
+        console.log("eventDetails", eventDetails);
+        if (!eventDetails) {
+          return next({
+            statusCode: 400,
+            message: "Could not extract event details.",
+          });
+        }
+
+        payload = { ...payload, eventDetails };
+
+        break;
+
+      case QUICK_ANSWERS:
+        payload = { ...payload, query: text };
+
+        break;
+
+      case UPLOAD_FILE:
+        if (!req.file) {
+          return next({ statusCode: 400, message: "No file uploaded." });
+        }
+
+        // Attach file details to payload
+        payload = {
+          ...payload,
+          filePath: req.file.path,
+          fileName: req.file.originalname,
+        };
+
+        break;
+
+      case RETRIEVE_FILE:
+        payload = { ...payload, query: text };
+
+        break;
     }
 
     const result = await aiOrchestrator(taskType, payload);
