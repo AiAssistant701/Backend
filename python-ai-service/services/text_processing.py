@@ -26,6 +26,7 @@ def classify_text(text):
         "research_analysis",
         "message_processing",
         "upload_file",
+        "retrieve_file",
         "finance_analysis",
         "send_email",
         "fetch_unread_emails",

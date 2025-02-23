@@ -39,7 +39,6 @@ const handleAIRequest = async (req, res, next) => {
     } else if (taskType === "quick_answers") {
       payload = { ...payload, query: text };
     } else if (taskType === "upload_file") {
-      // Ensure file is uploaded using multer
       if (!req.file) {
         return next({ statusCode: 400, message: "No file uploaded." });
       }
@@ -50,6 +49,8 @@ const handleAIRequest = async (req, res, next) => {
         filePath: req.file.path,
         fileName: req.file.originalname,
       };
+    } else if (taskType === "retrieve_file") {
+      payload = { ...payload, query: text }; // Pass query for file search
     }
 
     const result = await aiOrchestrator(taskType, payload);
