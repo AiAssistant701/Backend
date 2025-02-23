@@ -29,6 +29,7 @@ import {
   MESSAGE_PROCESSING,
   UPLOAD_FILE,
   RETRIEVE_FILE,
+  ORGANIZE_FILES,
   FINANCE_ANALYSIS,
   SEND_EMAIL,
   FETCH_UNREAD_EMAILS,
@@ -65,6 +66,9 @@ export const aiOrchestrator = async (taskType, payload) => {
 
     case RETRIEVE_FILE:
       return await getGoogleDriveFiles(payload.googleId, payload.query);
+
+    case ORGANIZE_FILES:
+      return await organizeFilesInDrive(payload.googleId);
 
     case SEND_EMAIL: //
       return await sendEmail(

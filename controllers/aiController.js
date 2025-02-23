@@ -50,7 +50,7 @@ const handleAIRequest = async (req, res, next) => {
         fileName: req.file.originalname,
       };
     } else if (taskType === "retrieve_file") {
-      payload = { ...payload, query: text }; // Pass query for file search
+      payload = { ...payload, query: text };
     }
 
     const result = await aiOrchestrator(taskType, payload);
