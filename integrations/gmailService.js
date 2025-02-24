@@ -5,32 +5,45 @@ import { getUserTokens } from "../usecases/users.js";
 // to send email
 // =======================
 export const sendEmail = async (googleId, to, subject, message) => {
-  const tokens = await getUserTokens(googleId);
-  if (!tokens) throw new Error("No Gmail authentication found for user.");
+  try {
+    const tokens = await getUserTokens(googleId);
+    console.log("tokens", tokens);
+    if (!tokens) throw new Error("No Gmail authentication found for user.");
 
-  const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials({ access_token: tokens.accessToken }); // remember to fix refresh_token issue (tokens)
+    const oauth2Client = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.GOOGLE_REDIRECT_URI
+    );
+    oauth2Client.setCredentials({
+      access_token: tokens.accessToken,
+    }); // remember to fix refresh_token issue (tokens)
 
-  const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+    const gmail = google.gmail({ version: "v1", auth: oauth2Client });
 
-  const emailContent = `
-      To: ${to}
-      Subject: ${subject}
-  
-      ${message}
-    `;
+    const emailContent = [
+      `To: ${to}`,
+      `From: me`,
+      `Subject: ${subject}`,
+      "",
+      message,
+    ].join("\n");
 
-  const encodedMessage = Buffer.from(emailContent)
-    .toString("base64")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_");
+    const encodedMessage = Buffer.from(emailContent)
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_");
 
-  const response = await gmail.users.messages.send({
-    userId: "me",
-    requestBody: { raw: encodedMessage },
-  });
+    const response = await gmail.users.messages.send({
+      userId: "me",
+      requestBody: { raw: encodedMessage },
+    });
 
-  return response.data;
+    return response.data;
+  } catch (error) {
+    console.error(error?.errors[0].message);
+    throw new Error("Failed to send email");
+  }
 };
 
 // =======================
@@ -114,9 +127,12 @@ export const summarizeUnreadEmails = async (googleId) => {
 
   const summarizedEmails = await Promise.all(
     emails.map(async (email) => {
-      const response = await axios.post(`${process.env.PYTHON_AI_URL}/summarize/`, {
-        text: email.snippet,
-      });
+      const response = await axios.post(
+        `${process.env.PYTHON_AI_URL}/summarize/`,
+        {
+          text: email.snippet,
+        }
+      );
 
       return {
         from: email.from,
