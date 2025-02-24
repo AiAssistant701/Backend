@@ -6,7 +6,7 @@ import responseHandler from "../middlewares/responseHandler.js";
 import { emailRegex, passwordRegex } from "../utils/constants.js";
 
 // Generate JWT Token
-const generateToken = (res, userId) => {
+export const generateToken = (res, userId) => {
   const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
     expiresIn: "7d",
   });

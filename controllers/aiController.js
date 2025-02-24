@@ -7,7 +7,7 @@ import {
   MEETING_SCHEDULING,
   QUICK_ANSWERS,
   UPLOAD_FILE,
-  RETRIEVE_FILE,
+  FILE_RETRIEVAL,
 } from "../utils/constants.js";
 
 const handleAIRequest = async (req, res, next) => {
@@ -69,7 +69,7 @@ const handleAIRequest = async (req, res, next) => {
 
         break;
 
-      case RETRIEVE_FILE:
+      case FILE_RETRIEVAL:
         payload = { ...payload, query: text };
 
         break;

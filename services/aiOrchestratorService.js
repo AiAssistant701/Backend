@@ -28,7 +28,7 @@ import {
   RESEARCH_ANALYSIS,
   MESSAGE_PROCESSING,
   UPLOAD_FILE,
-  RETRIEVE_FILE,
+  FILE_RETRIEVAL,
   ORGANIZE_FILES,
   FINANCE_ANALYSIS,
   SEND_EMAIL,
@@ -37,7 +37,6 @@ import {
   SUMMARIZE_EMAILS,
   MEETING_SCHEDULING,
   FETCH_UPCOMING_EVENTS,
-  FILE_RETRIEVAL,
   MARKET_RESEARCH,
   QUICK_ANSWERS,
   REPORT_GENERATION,
@@ -57,17 +56,17 @@ export const aiOrchestrator = async (taskType, payload) => {
     case FINANCE_ANALYSIS:
       return await analyzeBankStatement(payload);
 
-    case UPLOAD_FILE:
+    case UPLOAD_FILE: //
       return await uploadFileToGoogleDrive(
         payload.googleId,
         payload.filePath,
         payload.fileName
       );
 
-    case RETRIEVE_FILE:
+    case FILE_RETRIEVAL: //
       return await getGoogleDriveFiles(payload.googleId, payload.query);
 
-    case ORGANIZE_FILES:
+    case ORGANIZE_FILES: //
       return await organizeFilesInDrive(payload.googleId);
 
     case SEND_EMAIL: //
@@ -93,13 +92,10 @@ export const aiOrchestrator = async (taskType, payload) => {
     case FETCH_UPCOMING_EVENTS: //
       return await getUpcomingEvents(payload.googleId);
 
-    case FILE_RETRIEVAL:
-      return await retrieveFiles(payload);
-
     case MARKET_RESEARCH:
       return await performResearch(payload);
 
-    case QUICK_ANSWERS: // ~~~~~~~~~~~~~~~~~~~
+    case QUICK_ANSWERS: //
       return await provideQuickAnswers(payload.query);
 
     case REPORT_GENERATION:

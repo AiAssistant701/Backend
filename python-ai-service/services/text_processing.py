@@ -26,16 +26,15 @@ def classify_text(text):
         "research_analysis",
         "message_processing",
         "upload_file",
-        "retrieve_file",
+        "file_retrieval",
         "organize_files",
         "finance_analysis",
         "send_email",
         "fetch_unread_emails",
-        "summarize_emails", 
-        "search_emails", 
+        "summarize_emails",
+        "search_emails",
         "meeting_scheduling",
         "fetch_upcoming_events",
-        "file_retrieval",
         "market_research",
         "quick_answers",
         "report_generation",
@@ -88,9 +87,12 @@ def classify_text(text):
         ],
         
         # File operations
-        "file_management": [
+        "upload_file": [
             r"(save|store|upload|backup|organize|put) (this |the |a |an |)(file|document|spreadsheet|presentation)",
             r"(create|make|start) (a |an |)(new |blank |)(file|document|folder|directory)"
+        ],
+        "organize_files": [
+            r"(arrange|organize) (this |the |a |an |)(file|document|spreadsheet|presentation)"
         ],
         "file_retrieval": [
             r"(find|get|retrieve|locate|fetch|download|open) (my |the |a |an |)(file|document|spreadsheet|presentation|pdf)",

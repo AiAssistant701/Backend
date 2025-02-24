@@ -8,6 +8,7 @@ import {
   requestPasswordReset,
   resetPassword,
   verifyEmail,
+  generateToken,
 } from "../../controllers/authController.js";
 import { body } from "express-validator";
 import verifyToken from "../../middlewares/authMiddleware.js";
@@ -43,7 +44,12 @@ router.get(
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
-  (req, res) => {
+  (req, res, next) => {
+    if (!req.user)
+      return next({ statusCode: 401, message: "Authentication failed" });
+
+    generateToken(res, req.user.id);
+
     res.redirect("/"); // process.env.FRONTEND_URL
   }
 );
