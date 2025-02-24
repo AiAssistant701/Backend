@@ -159,7 +159,7 @@ export const summarizeUnreadEmails = async (googleId) => {
 
     return summarizedEmails;
   } catch (error) {
-    console.error(error?.errors[0].message);
+    console.error(error);
     throw new Error("Failed to summarize emails");
   }
 };
