@@ -88,12 +88,13 @@ def classify_text(text):
         
         # File operations
         "upload_file": [
-            r"(save|store|upload|backup|organize|put) (this |the |a |an |)(file|document|spreadsheet|presentation)",
+            r"(save|store|upload|backup|put) (this |the |a |an |)(file|document|spreadsheet|presentation)",
             r"(create|make|start) (a |an |)(new |blank |)(file|document|folder|directory)"
         ],
         "organize_files": [
-            r"(arrange|organize) (this |the |a |an |)(file|document|spreadsheet|presentation)"
+            r"(arrange|organize|sort|tidy up|rearrange|clean up) (my |this |the |all |these |a |an )?(files?|documents?|folders?|spreadsheets?|presentations?|images?|videos?)"
         ],
+
         "file_retrieval": [
             r"(find|get|retrieve|locate|fetch|download|open) (my |the |a |an |)(file|document|spreadsheet|presentation|pdf)",
             r"(where is|can you locate) (my |the |)(file|document) (about|named|called|titled)"

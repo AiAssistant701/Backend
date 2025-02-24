@@ -93,3 +93,56 @@ export const getOrCreateFolder = async (googleId, folderName) => {
 
   return folder.data.id;
 };
+
+// =======================
+// Organizes all files in Google Drive into categorized folders.
+// =======================
+export const organizeFilesInDrive = async (googleId) => {
+    const tokens = await getUserTokens(googleId);
+    if (!tokens) throw new Error("No Google authentication found for user.");
+  
+    const oauth2Client = new google.auth.OAuth2();
+    oauth2Client.setCredentials(tokens);
+    const drive = google.drive({ version: "v3", auth: oauth2Client });
+  
+    // Step 1: Retrieve all files in Google Drive (excluding folders)
+    const response = await drive.files.list({
+      q: "mimeType != 'application/vnd.google-apps.folder'", // Exclude folders
+      fields: "files(id, name, parents)",
+      spaces: "drive",
+    });
+  
+    const files = response.data.files;
+  
+    if (files.length === 0) {
+      return { message: "No files found in Google Drive." };
+    }
+  
+    // Step 2: Classify and move each file
+    let movedFiles = [];
+  
+    for (const file of files) {
+      const category = classifyFile(file.name);
+      const folderId = await getOrCreateFolder(googleId, category);
+  
+      // If file is already in the correct folder, skip moving it
+      if (file.parents && file.parents.includes(folderId)) {
+        continue;
+      }
+  
+      // Step 3: Move file to the correct folder
+      await drive.files.update({
+        fileId: file.id,
+        addParents: folderId,
+        removeParents: file.parents ? file.parents.join(",") : "",
+        fields: "id, name, parents",
+      });
+  
+      movedFiles.push({ id: file.id, name: file.name, category });
+    }
+  
+    return {
+      message: "Files successfully organized in Google Drive.",
+      movedFiles,
+    };
+  };
