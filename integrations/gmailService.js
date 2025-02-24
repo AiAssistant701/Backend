@@ -68,7 +68,7 @@ export const getUnreadEmails = async (googleId) => {
     const messages = response.data.messages || [];
     return await fetchEmailDetails(gmail, messages);
   } catch (error) {
-    console.error(error?.errors[0].message);
+    console.error(error);
     throw new Error("Failed to get unread emails");
   }
 };
@@ -119,14 +119,13 @@ const fetchEmailDetails = async (gmail, messages) => {
       const from =
         headers.find((h) => h.name === "From")?.value || "Unknown Sender";
       const snippet = email.data.snippet;
-      t;
 
       emailDetails.push({ from, subject, snippet });
     }
 
     return emailDetails;
   } catch (error) {
-    console.error(error?.errors[0].message);
+    console.error(error);
     throw new Error("Failed to fetch email details");
   }
 };
