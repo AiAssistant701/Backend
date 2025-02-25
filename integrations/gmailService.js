@@ -51,7 +51,11 @@ export const getUnreadEmails = async (googleId) => {
     const tokens = await getUserTokens(googleId);
     if (!tokens) throw new Error("No Gmail authentication found for user.");
 
-    const oauth2Client = new google.auth.OAuth2();
+    const oauth2Client = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.GOOGLE_REDIRECT_URI
+    );
     oauth2Client.setCredentials(tokens);
 
     const gmail = google.gmail({ version: "v1", auth: oauth2Client });
@@ -77,7 +81,11 @@ export const searchEmails = async (googleId, query) => {
     const tokens = await getUserTokens(googleId);
     if (!tokens) throw new Error("No Gmail authentication found for user.");
 
-    const oauth2Client = new google.auth.OAuth2();
+    const oauth2Client = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.GOOGLE_REDIRECT_URI
+    );
     oauth2Client.setCredentials(tokens);
 
     const gmail = google.gmail({ version: "v1", auth: oauth2Client });

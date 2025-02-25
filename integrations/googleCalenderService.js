@@ -8,7 +8,11 @@ export const createCalendarEvent = async (googleId, eventDetails) => {
   const tokens = await getUserTokens(googleId);
   if (!tokens) throw new Error("No Google authentication found for user.");
 
-  const oauth2Client = new google.auth.OAuth2();
+  const oauth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URI
+  );
   oauth2Client.setCredentials(tokens);
 
   const calendar = google.calendar({ version: "v3", auth: oauth2Client });
@@ -35,7 +39,11 @@ export const getUpcomingEvents = async (googleId) => {
   const tokens = await getUserTokens(googleId);
   if (!tokens) throw new Error("No Google authentication found for user.");
 
-  const oauth2Client = new google.auth.OAuth2();
+  const oauth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URI
+  );
   oauth2Client.setCredentials(tokens);
 
   const calendar = google.calendar({ version: "v3", auth: oauth2Client });
