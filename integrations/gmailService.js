@@ -39,8 +39,7 @@ export const sendEmail = async (googleId, to, subject, message) => {
 
     return response.data;
   } catch (error) {
-    console.error(error?.errors[0].message);
-    throw new Error("Failed to send email");
+    throw new Error(`Gmail API Error: ${error?.errors[0].message || error}`);
   }
 };
 
@@ -66,8 +65,7 @@ export const getUnreadEmails = async (googleId) => {
     const messages = response.data.messages || [];
     return await fetchEmailDetails(gmail, messages);
   } catch (error) {
-    console.error(error);
-    throw new Error("Failed to get unread emails");
+    throw new Error(`Gmail API Error: ${error?.errors[0].message || error}`);
   }
 };
 
@@ -93,8 +91,7 @@ export const searchEmails = async (googleId, query) => {
     const messages = response.data.messages || [];
     return await fetchEmailDetails(gmail, messages);
   } catch (error) {
-    console.error(error?.errors[0].message);
-    throw new Error("Failed to search emails");
+    throw new Error(`Gmail API Error: ${error?.errors[0].message || error}`);
   }
 };
 
@@ -123,8 +120,7 @@ const fetchEmailDetails = async (gmail, messages) => {
 
     return emailDetails;
   } catch (error) {
-    console.error(error);
-    throw new Error("Failed to fetch email details");
+    throw new Error(`Gmail API Error: ${error?.errors[0].message || error}`);
   }
 };
 
@@ -157,7 +153,6 @@ export const summarizeUnreadEmails = async (googleId) => {
 
     return summarizedEmails;
   } catch (error) {
-    console.error(error);
-    throw new Error("Failed to summarize emails");
+    throw new Error(`Gmail API Error: ${error?.errors[0].message || error}`);
   }
 };

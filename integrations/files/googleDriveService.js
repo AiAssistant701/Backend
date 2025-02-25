@@ -41,7 +41,7 @@ export const uploadFileToGoogleDrive = async (googleId, filePath, fileName) => {
 
     return { ...response.data, category };
   } catch (error) {
-    console.error(error);
+    console.error(121, error.message);
     throw new Error("Failed to upload file to Google Drive");
   }
 };
@@ -69,8 +69,7 @@ export const getGoogleDriveFiles = async (googleId, query = "") => {
 
     return response.data.files;
   } catch (error) {
-    console.error(error);
-    throw new Error("Failed to get file from google drive");
+    throw new Error(`Google Drive API Error: ${error.message}`);
   }
 };
 
@@ -113,8 +112,7 @@ export const getOrCreateFolder = async (googleId, folderName) => {
 
     return folder.data.id;
   } catch (error) {
-    console.error(error);
-    throw new Error("Failed to get or create folder in Google Drive");
+    throw new Error(`Google Drive API Error: ${error.message}`);
   }
 };
 
@@ -171,7 +169,6 @@ export const organizeFilesInDrive = async (googleId) => {
       movedFiles,
     };
   } catch (error) {
-    console.error(error);
-    throw new Error("Failed to organize files in Google Drive");
+    throw new Error(`Google Drive API Error: ${error.message}`);
   }
 };
