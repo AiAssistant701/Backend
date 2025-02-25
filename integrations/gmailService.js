@@ -15,9 +15,7 @@ export const sendEmail = async (googleId, to, subject, message) => {
       process.env.GOOGLE_CLIENT_SECRET,
       process.env.GOOGLE_REDIRECT_URI
     );
-    oauth2Client.setCredentials({
-      access_token: tokens.accessToken,
-    }); // remember to fix refresh_token issue (tokens)
+    oauth2Client.setCredentials(tokens);
 
     const gmail = google.gmail({ version: "v1", auth: oauth2Client });
 
@@ -55,7 +53,7 @@ export const getUnreadEmails = async (googleId) => {
     if (!tokens) throw new Error("No Gmail authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2();
-    oauth2Client.setCredentials({ access_token: tokens.accessToken });
+    oauth2Client.setCredentials(tokens);
 
     const gmail = google.gmail({ version: "v1", auth: oauth2Client });
 

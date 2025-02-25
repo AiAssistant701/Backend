@@ -9,7 +9,7 @@ export const createCalendarEvent = async (googleId, eventDetails) => {
   if (!tokens) throw new Error("No Google authentication found for user.");
 
   const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials({ access_token: tokens.accessToken });
+  oauth2Client.setCredentials(tokens);
 
   const calendar = google.calendar({ version: "v3", auth: oauth2Client });
 
@@ -36,7 +36,7 @@ export const getUpcomingEvents = async (googleId) => {
   if (!tokens) throw new Error("No Google authentication found for user.");
 
   const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials({ access_token: tokens.accessToken }); // remember to fix refresh_token issue (tokens)
+  oauth2Client.setCredentials(tokens);
 
   const calendar = google.calendar({ version: "v3", auth: oauth2Client });
 

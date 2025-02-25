@@ -7,129 +7,154 @@ import { classifyFile } from "../../utils/fileClassifier.js";
 // Uploads a file to Google Drive
 // =======================
 export const uploadFileToGoogleDrive = async (googleId, filePath, fileName) => {
-  const tokens = await getUserTokens(googleId);
-  if (!tokens) throw new Error("No Google authentication found for user.");
+  try {
+    const tokens = await getUserTokens(googleId);
+    if (!tokens) throw new Error("No Google authentication found for user.");
 
-  const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials(tokens);
-  const drive = google.drive({ version: "v3", auth: oauth2Client });
+    const oauth2Client = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.GOOGLE_REDIRECT_URI
+    );
+    oauth2Client.setCredentials(tokens);
+    const drive = google.drive({ version: "v3", auth: oauth2Client });
 
-  // Classify the file
-  const category = classifyFile(fileName);
-  const folderId = await getOrCreateFolder(googleId, category);
+    // Classify the file
+    const category = classifyFile(fileName);
+    const folderId = await getOrCreateFolder(googleId, category);
 
-  const fileMetadata = {
-    name: fileName,
-    parents: [folderId],
-  };
+    const fileMetadata = {
+      name: fileName,
+      parents: [folderId],
+    };
 
-  const media = {
-    mimeType: "application/octet-stream",
-    body: fs.createReadStream(filePath),
-  };
+    const media = {
+      mimeType: "application/octet-stream",
+      body: fs.createReadStream(filePath),
+    };
 
-  const response = await drive.files.create({
-    resource: fileMetadata,
-    media: media,
-    fields: "id, name, webViewLink",
-  });
+    const response = await drive.files.create({
+      resource: fileMetadata,
+      media: media,
+      fields: "id, name, webViewLink",
+    });
 
-  return { ...response.data, category };
+    return { ...response.data, category };
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to upload file to Google Drive");
+  }
 };
 
 // =======================
 // Retrieves a list of files from Google Drive
 // =======================
 export const getGoogleDriveFiles = async (googleId, query = "") => {
-  const tokens = await getUserTokens(googleId);
-  if (!tokens) throw new Error("No Google authentication found for user.");
+  try {
+    const tokens = await getUserTokens(googleId);
+    if (!tokens) throw new Error("No Google authentication found for user.");
 
-  const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials(tokens);
+    const oauth2Client = new google.auth.OAuth2();
+    oauth2Client.setCredentials(tokens);
 
-  const drive = google.drive({ version: "v3", auth: oauth2Client });
+    const drive = google.drive({ version: "v3", auth: oauth2Client });
 
-  // Querying files
-  const response = await drive.files.list({
-    q: query ? `name contains '${query}'` : "",
-    fields: "files(id, name, webViewLink)",
-    spaces: "drive",
-  });
+    // Querying files
+    const response = await drive.files.list({
+      q: query ? `name contains '${query}'` : "",
+      fields: "files(id, name, webViewLink)",
+      spaces: "drive",
+    });
+    console.log("response", response.data.files);
 
-  return response.data.files;
+    return response.data.files;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to get file from google drive");
+  }
 };
 
 // =======================
 // Finds or creates a folder in Google Drive
 // =======================
 export const getOrCreateFolder = async (googleId, folderName) => {
-  const tokens = await getUserTokens(googleId);
-  if (!tokens) throw new Error("No Google authentication found for user.");
+  try {
+    const tokens = await getUserTokens(googleId);
+    if (!tokens) throw new Error("No Google authentication found for user.");
 
-  const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials(tokens);
-  const drive = google.drive({ version: "v3", auth: oauth2Client });
+    const oauth2Client = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.GOOGLE_REDIRECT_URI
+    );
+    oauth2Client.setCredentials(tokens);
+    const drive = google.drive({ version: "v3", auth: oauth2Client });
 
-  // Check if folder already exists
-  const folderQuery = `mimeType='application/vnd.google-apps.folder' and name='${folderName}'`;
-  const response = await drive.files.list({
-    q: folderQuery,
-    fields: "files(id, name)",
-  });
+    // Check if folder already exists
+    const folderQuery = `mimeType='application/vnd.google-apps.folder' and name='${folderName}'`;
+    const response = await drive.files.list({
+      q: folderQuery,
+      fields: "files(id, name)",
+    });
 
-  if (response.data.files.length > 0) {
-    return response.data.files[0].id;
+    if (response.data.files.length > 0) {
+      return response.data.files[0].id;
+    }
+
+    // If folder doesn't exist, create it
+    const folderMetadata = {
+      name: folderName,
+      mimeType: "application/vnd.google-apps.folder",
+    };
+    const folder = await drive.files.create({
+      resource: folderMetadata,
+      fields: "id",
+    });
+
+    return folder.data.id;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to get or create folder in Google Drive");
   }
-
-  // If folder doesn't exist, create it
-  const folderMetadata = {
-    name: folderName,
-    mimeType: "application/vnd.google-apps.folder",
-  };
-  const folder = await drive.files.create({
-    resource: folderMetadata,
-    fields: "id",
-  });
-
-  return folder.data.id;
 };
 
 // =======================
 // Organizes all files in Google Drive into categorized folders.
 // =======================
 export const organizeFilesInDrive = async (googleId) => {
+  try {
     const tokens = await getUserTokens(googleId);
     if (!tokens) throw new Error("No Google authentication found for user.");
-  
+
     const oauth2Client = new google.auth.OAuth2();
     oauth2Client.setCredentials(tokens);
     const drive = google.drive({ version: "v3", auth: oauth2Client });
-  
+
     // Step 1: Retrieve all files in Google Drive (excluding folders)
     const response = await drive.files.list({
       q: "mimeType != 'application/vnd.google-apps.folder'", // Exclude folders
       fields: "files(id, name, parents)",
       spaces: "drive",
     });
-  
+
     const files = response.data.files;
-  
+
     if (files.length === 0) {
       return { message: "No files found in Google Drive." };
     }
-  
+
     // Step 2: Classify and move each file
     let movedFiles = [];
-  
+
     for (const file of files) {
       const category = classifyFile(file.name);
       const folderId = await getOrCreateFolder(googleId, category);
-  
+
       // If file is already in the correct folder, skip moving it
       if (file.parents && file.parents.includes(folderId)) {
         continue;
       }
-  
+
       // Step 3: Move file to the correct folder
       await drive.files.update({
         fileId: file.id,
@@ -137,12 +162,16 @@ export const organizeFilesInDrive = async (googleId) => {
         removeParents: file.parents ? file.parents.join(",") : "",
         fields: "id, name, parents",
       });
-  
+
       movedFiles.push({ id: file.id, name: file.name, category });
     }
-  
+
     return {
       message: "Files successfully organized in Google Drive.",
       movedFiles,
     };
-  };
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to organize files in Google Drive");
+  }
+};
