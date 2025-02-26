@@ -15,7 +15,7 @@ const handleAIRequest = async (req, res, next) => {
     let user = req.user;
     const { text } = req.body;
     // example text: Send an email to johndoe@example.com subject Meeting Update message The meeting is at 3 PM.
-    const taskType = "send_email";
+    const taskType = await userIntent(text);
     console.log("taskType", taskType);
 
     let payload = {
