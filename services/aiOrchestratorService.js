@@ -18,7 +18,7 @@ import {
 import {
   uploadFileToGoogleDrive,
   getGoogleDriveFiles,
-  organizeFilesInDrive
+  organizeFilesInDrive,
 } from "../integrations/files/googleDriveService.js";
 import {
   generateReports,
@@ -44,71 +44,165 @@ import {
   PROGRESS_TRACKING,
   HEALTH_REMINDERS,
 } from "../utils/constants.js";
+import { logAIDecision } from "../usecases/aiDecicionLogs.js";
 
 // AI Orchestrator - Determines the AI Task & Routes to Correct Service
 export const aiOrchestrator = async (taskType, payload) => {
-  switch (taskType) {
-    case RESEARCH_ANALYSIS:
-      return await processResearchPaper(payload);
+  let result, modelUsed, decisionScore, reasoning;
+  const startTime = Date.now(); // Start time for execution tracking
 
-    case MESSAGE_PROCESSING:
-      return await processMessage(payload);
+  try {
+    switch (taskType) {
+      case RESEARCH_ANALYSIS:
+        modelUsed = "Hugging Face BART";
+        reasoning = "Best model for research paper summarization.";
+        result = await processResearchPaper(payload);
+        decisionScore = 0.95;
+        break;
 
-    case FINANCE_ANALYSIS:
-      return await analyzeBankStatement(payload);
+      case MESSAGE_PROCESSING:
+        modelUsed = "GPT-4 Turbo";
+        reasoning = "GPT-4 is optimal for conversational context.";
+        result = await processMessage(payload);
+        decisionScore = 0.92;
+        break;
 
-    case UPLOAD_FILE: //
-      return await uploadFileToGoogleDrive(
-        payload.googleId,
-        payload.filePath,
-        payload.fileName
-      );
+      case FINANCE_ANALYSIS:
+        modelUsed = "Hugging Face FinBERT";
+        reasoning = "FinBERT provides the best financial insights.";
+        result = await analyzeBankStatement(payload);
+        decisionScore = 0.97;
+        break;
 
-    case FILE_RETRIEVAL: //
-      return await getGoogleDriveFiles(payload.googleId, payload.query);
+      case UPLOAD_FILE:
+        modelUsed = "Google Drive API";
+        reasoning = "Using Google Drive API for file storage.";
+        result = await uploadFileToGoogleDrive(
+          payload.googleId,
+          payload.filePath,
+          payload.fileName
+        );
+        decisionScore = 1.0;
+        break;
 
-    case ORGANIZE_FILES: //
-      return await organizeFilesInDrive(payload.googleId);
+      case FILE_RETRIEVAL:
+        modelUsed = "Google Drive API";
+        reasoning = "Using Google Drive API for retrieving files.";
+        result = await getGoogleDriveFiles(payload.googleId, payload.query);
+        decisionScore = 1.0;
+        break;
 
-    case SEND_EMAIL: //
-      return await sendEmail(
-        payload.googleId,
-        payload.to,
-        payload.subject,
-        payload.message
-      );
+      case ORGANIZE_FILES:
+        modelUsed = "AI Classifier + Google Drive API";
+        reasoning = "Using AI to auto-classify files.";
+        result = await organizeFilesInDrive(payload.googleId);
+        decisionScore = 0.95;
+        break;
 
-    case FETCH_UNREAD_EMAILS: //
-      return await getUnreadEmails(payload.googleId);
+      case SEND_EMAIL:
+        modelUsed = "GPT-4 + Gmail API";
+        reasoning = "GPT-4 composes email, Gmail API sends it.";
+        result = await sendEmail(
+          payload.googleId,
+          payload.to,
+          payload.subject,
+          payload.message
+        );
+        decisionScore = 0.94;
+        break;
 
-    case SEARCH_EMAILS: //
-      return await searchEmails(payload.googleId, payload.query);
+      case FETCH_UNREAD_EMAILS:
+        modelUsed = "Gmail API";
+        reasoning = "Fetching emails directly from Gmail API.";
+        result = await getUnreadEmails(payload.googleId);
+        decisionScore = 1.0;
+        break;
 
-    case SUMMARIZE_EMAILS: //
-      return await summarizeUnreadEmails(payload.googleId);
+      case SEARCH_EMAILS:
+        modelUsed = "Gmail API";
+        reasoning = "Gmail API provides the fastest search results.";
+        result = await searchEmails(payload.googleId, payload.query);
+        decisionScore = 1.0;
+        break;
 
-    case MEETING_SCHEDULING: //
-      return await createCalendarEvent(payload.googleId, payload.eventDetails);
+      case SUMMARIZE_EMAILS:
+        modelUsed = "Hugging Face BART";
+        reasoning = "Best model for email summarization.";
+        result = await summarizeUnreadEmails(payload.googleId);
+        decisionScore = 0.96;
+        break;
 
-    case FETCH_UPCOMING_EVENTS: //
-      return await getUpcomingEvents(payload.googleId);
+      case MEETING_SCHEDULING:
+        modelUsed = "Google Calendar API";
+        reasoning = "Google Calendar API is optimal for scheduling.";
+        result = await createCalendarEvent(
+          payload.googleId,
+          payload.eventDetails
+        );
+        decisionScore = 1.0;
+        break;
 
-    case MARKET_RESEARCH:
-      return await performResearch(payload);
+      case FETCH_UPCOMING_EVENTS:
+        modelUsed = "Google Calendar API";
+        reasoning = "Google API fetches the most accurate upcoming events.";
+        result = await getUpcomingEvents(payload.googleId);
+        decisionScore = 1.0;
+        break;
 
-    case QUICK_ANSWERS: //
-      return await provideQuickAnswers(payload.query);
+      case MARKET_RESEARCH:
+        modelUsed = "Hugging Face NLP";
+        reasoning = "AI research model used for trend analysis.";
+        result = await performResearch(payload);
+        decisionScore = 0.93;
+        break;
 
-    case REPORT_GENERATION:
-      return await generateReports(payload);
+      case QUICK_ANSWERS:
+        modelUsed = "Google Gemma + Pinecone";
+        reasoning = "Efficient model for real-time responses.";
+        result = await provideQuickAnswers(payload.query);
+        decisionScore = 0.98;
+        break;
 
-    case PROGRESS_TRACKING:
-      return await trackProgress(payload);
+      case REPORT_GENERATION:
+        modelUsed = "AI Report Generator";
+        reasoning = "AI-powered report generation engine.";
+        result = await generateReports(payload);
+        decisionScore = 0.95;
+        break;
 
-    case HEALTH_REMINDERS:
-      return await provideHealthReminders(payload);
+      case PROGRESS_TRACKING:
+        modelUsed = "Pinecone Vector Search";
+        reasoning = "AI tracks progress using memory embeddings.";
+        result = await trackProgress(payload);
+        decisionScore = 0.96;
+        break;
 
-    default:
-      throw { statusCode: 400, message: "Invalid AI Task Type" };
+      case HEALTH_REMINDERS:
+        modelUsed = "Health API + AI NLP";
+        reasoning = "Health API for fitness tracking & AI reminders.";
+        result = await provideHealthReminders(payload);
+        decisionScore = 0.97;
+        break;
+
+      default:
+        throw { statusCode: 400, message: "Invalid AI Task Type" };
+    }
+
+    // Calculate execution time
+    const executionTime = Date.now() - startTime;
+
+    // Log AI decision to MongoDB
+    await logAIDecision(
+      taskType,
+      modelUsed,
+      decisionScore,
+      reasoning,
+      executionTime
+    );
+
+    return result;
+  } catch (error) {
+    console.error("AI Orchestrator Error:", error);
+    throw error;
   }
 };
