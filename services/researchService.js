@@ -16,6 +16,5 @@ export const provideQuickAnswers = async (query) => {
     question: query
   });
 
-  console.log(response.data);
   return { message: "Quick answer provided", response: response.data.answer };
 };

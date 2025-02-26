@@ -100,8 +100,8 @@ export const aiOrchestrator = async (taskType, payload) => {
         break;
 
       case SEND_EMAIL:
-        modelUsed = "GPT-4 + Gmail API";
-        reasoning = "GPT-4 composes email, Gmail API sends it.";
+        modelUsed = "Google Gemma + Gmail API";
+        reasoning = "Gemma composes email, Gmail API sends it.";
         result = await sendEmail(
           payload.googleId,
           payload.to,

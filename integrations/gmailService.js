@@ -1,5 +1,6 @@
 import { google } from "googleapis";
 import { getUserTokens } from "../usecases/users.js";
+import { provideQuickAnswers } from "../services/researchService.js";
 
 // =======================
 // to send email
@@ -7,9 +8,13 @@ import { getUserTokens } from "../usecases/users.js";
 export const sendEmail = async (googleId, to, subject, message) => {
   try {
     const tokens = await getUserTokens(googleId);
-    console.log("tokens", tokens);
     if (!tokens) throw new Error("No Gmail authentication found for user.");
 
+    if (message.toLowerCase().startsWith("about")) {
+      let template = `Generate a professional email ${message}. Do NOT use placeholders like [Your Name]. If a value is unknown, omit it instead.`;
+      let response = await provideQuickAnswers(template);
+      message = response.response;
+    }
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
@@ -39,7 +44,7 @@ export const sendEmail = async (googleId, to, subject, message) => {
 
     return response.data;
   } catch (error) {
-    throw new Error(`Gmail API Error: ${error?.errors[0].message || error}`);
+    throw new Error(`Gmail API Error: ${error.message}`);
   }
 };
 
@@ -69,7 +74,7 @@ export const getUnreadEmails = async (googleId) => {
     const messages = response.data.messages || [];
     return await fetchEmailDetails(gmail, messages);
   } catch (error) {
-    throw new Error(`Gmail API Error: ${error?.errors[0].message || error}`);
+    throw new Error(`Gmail API Error: ${error.message}`);
   }
 };
 
@@ -99,7 +104,7 @@ export const searchEmails = async (googleId, query) => {
     const messages = response.data.messages || [];
     return await fetchEmailDetails(gmail, messages);
   } catch (error) {
-    throw new Error(`Gmail API Error: ${error?.errors[0].message || error}`);
+    throw new Error(`Gmail API Error: ${error.message}`);
   }
 };
 
@@ -128,7 +133,7 @@ const fetchEmailDetails = async (gmail, messages) => {
 
     return emailDetails;
   } catch (error) {
-    throw new Error(`Gmail API Error: ${error?.errors[0].message || error}`);
+    throw new Error(`Gmail API Error: ${error.message}`);
   }
 };
 
@@ -161,6 +166,6 @@ export const summarizeUnreadEmails = async (googleId) => {
 
     return summarizedEmails;
   } catch (error) {
-    throw new Error(`Gmail API Error: ${error?.errors[0].message || error}`);
+    throw new Error(`Gmail API Error: ${error.message}`);
   }
 };
