@@ -9,6 +9,7 @@ from services.embedding_service import get_text_embedding
 from services.image_processing import extract_text_from_image
 from services.extract_event_details import extract_event_details
 from services.quick_answers import get_embedding, pinecone_index, answer_question
+from services.report_generation import generate_report
 """ from services.speech_processing import convert_speech_to_text """
 """ from services.ai_decision_logging import log_ai_decision """
 
@@ -29,6 +30,9 @@ class AnswerResponse(BaseModel):
 class KnowledgeBaseItem(BaseModel):
     text: str
     metadata: Optional[dict] = None
+
+class ReportRequest(BaseModel):
+    data: str
 
 @app.get("/")
 def home():
@@ -86,6 +90,16 @@ async def add_to_knowledge_base(item: KnowledgeBaseItem):
         return {"status": "success", "id": item_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to add to knowledge base: {str(e)}")
+    
+@app.post("/generate-report/")
+def generate_report(request: ReportRequest):
+    try:
+        prompt = f"Generate a professional report and give it a title based on: {request.data}"
+        result = generate_report(prompt, max_length=500)[0]["generated_text"]
+        
+        return {"content": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating report: {str(e)}")
 
 @app.post("/extract_pdf/")
 def extract_pdf(file: UploadFile = File(...)):

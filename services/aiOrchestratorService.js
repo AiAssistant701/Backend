@@ -5,6 +5,7 @@ import { analyzeBankStatement } from "./financeService.js";
 import { manageEmailInbox, scheduleMeetings } from "./messagingService.js";
 import { retrieveFiles } from "./fileService.js";
 import { performResearch, provideQuickAnswers } from "./researchService.js";
+import { generateReport } from "./reportGeneratorService.js";
 import {
   createCalendarEvent,
   getUpcomingEvents,
@@ -166,7 +167,7 @@ export const aiOrchestrator = async (taskType, payload) => {
       case REPORT_GENERATION:
         modelUsed = "AI Report Generator";
         reasoning = "AI-powered report generation engine.";
-        result = await generateReports(payload);
+        result = await generateReport(payload);
         decisionScore = 0.95;
         break;
 
