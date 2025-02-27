@@ -37,6 +37,108 @@ const getClassifier = async () => {
   return classifierInstance;
 };
 
+// =======================
+// Analyzes text for urgency indicators
+// =======================
+const analyzeUrgency = (text) => {
+  const lowerText = text.toLowerCase();
+
+  // Single urgency keywords
+  const urgentKeywords = [
+    "asap",
+    "immediately",
+    "urgent",
+    "emergency",
+    "critical",
+    "priority",
+    "crucial",
+    "vital",
+    "crisis",
+  ];
+
+  // Phrases that indicate urgency
+  const urgentPhrases = [
+    "as soon as possible",
+    "right away",
+    "without delay",
+    "time sensitive",
+    "need assistance",
+    "need help",
+    "can't wait",
+    "cannot wait",
+    "system down",
+    "system is down",
+    "not working",
+    "broken",
+    "can't access",
+    "cannot access",
+    "unable to access",
+    "affecting business",
+    "affecting our business",
+    "impacting business",
+    "business impact",
+    "revenue impact",
+    "financial impact",
+    "losing money",
+    "lost revenue",
+    "deadline",
+    "by tomorrow",
+    "by today",
+    "right now",
+    "at once",
+  ];
+
+  // Business impact phrases that indicate urgency
+  const businessImpactPhrases = [
+    "can't process",
+    "cannot process",
+    "unable to process",
+    "blocking",
+    "blocked",
+    "preventing us from",
+    "preventing me from",
+    "customers affected",
+    "customers impacted",
+    "customers waiting",
+    "production issue",
+    "production environment",
+    "live environment",
+    "service outage",
+    "service disruption",
+    "downtime",
+  ];
+
+  const containsUrgentKeyword = urgentKeywords.some((keyword) =>
+    lowerText.includes(keyword)
+  );
+
+  const containsUrgentPhrase = urgentPhrases.some((phrase) =>
+    lowerText.includes(phrase)
+  );
+
+  const containsBusinessImpact = businessImpactPhrases.some((phrase) =>
+    lowerText.includes(phrase)
+  );
+
+  // Overall urgency score
+  const urgencyScore =
+    (containsUrgentKeyword ? 0.5 : 0) +
+    (containsUrgentPhrase ? 0.3 : 0) +
+    (containsBusinessImpact ? 0.4 : 0);
+
+  return {
+    isUrgent:
+      urgencyScore >= 0.3 || containsUrgentKeyword || containsBusinessImpact,
+    urgencyScore,
+    containsUrgentKeyword,
+    containsUrgentPhrase,
+    containsBusinessImpact,
+  };
+};
+
+// =======================
+// Classifies the text
+// =======================
 export const classifyText = async (text, confidenceThreshold = 0.3) => {
   const classifier = await getClassifier();
 
@@ -58,10 +160,37 @@ export const classifyText = async (text, confidenceThreshold = 0.3) => {
     const topCategory = result.labels[0];
     const confidence = result.scores[0];
 
+    const secondCategory = result.labels[1];
+    const secondConfidence = result.scores[1];
+
+    const urgentInquiryIndex = result.labels.indexOf("urgent inquiry");
+    const urgentConfidence =
+      urgentInquiryIndex >= 0 ? result.scores[urgentInquiryIndex] : 0;
+
+    // Check for urgency in the text
+    const urgencyAnalysis = analyzeUrgency(cleanedText);
+
+    let adjustedCategory = topCategory;
+    let adjustedConfidence = confidence;
+
+    if (
+      urgencyAnalysis.isUrgent &&
+      urgentInquiryIndex >= 0 &&
+      urgentConfidence > 0.8 * confidence
+    ) {
+      // If text has strong urgency indicators and "urgent inquiry" is close behind
+      adjustedCategory = "urgent inquiry";
+      adjustedConfidence = Math.max(urgentConfidence, confidence * 0.9);
+    }
+
     return {
-      category: topCategory,
-      confidence: confidence,
-      fallback: confidence < confidenceThreshold,
+      category: adjustedCategory,
+      originalCategory: topCategory,
+      confidence: adjustedConfidence,
+      secondCategory: secondCategory,
+      secondConfidence: secondConfidence,
+      urgencyAnalysis: urgencyAnalysis,
+      fallback: adjustedConfidence < confidenceThreshold,
     };
   } catch (error) {
     console.error("Classification error:", error);
@@ -88,11 +217,22 @@ export const classifyPriority = async (text) => {
 // =======================
 export const shouldAutoReply = async (email) => {
   // Extract more context from the email
-  const fullText = [email.subject, email.body].filter(Boolean).join(" ");
-  const classification = await classifyText(fullText);
+  const subject = email.subject || "";
+  const body = email.body || "";
+  const fullText = [subject, body].join(" ");
+
+  const urgencyAnalysis = analyzeUrgency(fullText);
+
+  const classificationText = [subject, body, body].join(" ");
+
+  const classification = await classifyText(classificationText);
   const priority = await classifyPriority(fullText);
 
-  const AUTO_REPLY_CONFIDENCE_THRESHOLD = 0.35;
+  // Minimum confidence threshold for auto-replies
+  const AUTO_REPLY_CONFIDENCE_THRESHOLD = 0.3;
+
+  // Lower threshold for urgent messages
+  const URGENT_CONFIDENCE_THRESHOLD = 0.25;
 
   const autoReplyCategories = [
     "support request",
@@ -121,25 +261,14 @@ export const shouldAutoReply = async (email) => {
     "complaint",
   ];
 
-  const urgentKeywords = [
-    "asap",
-    "immediately",
-    "urgent",
-    "emergency",
-    "critical",
-  ];
+  const wordCount = fullText.split(/\s+/).length;
+  const isVeryShort = wordCount < 10;
 
-  const isVeryShort = fullText.split(/\s+/).length < 10;
-
+  // Check for keywords that suggest human review is needed
   const needsHumanReview = humanReviewKeywords.some((keyword) =>
     fullText.toLowerCase().includes(keyword.toLowerCase())
   );
 
-  const containsUrgentKeywords = urgentKeywords.some((keyword) =>
-    fullText.toLowerCase().includes(keyword.toLowerCase())
-  );
-
-  // Decision logic with reason
   if (needsHumanReview) {
     return {
       shouldReply: false,
@@ -147,6 +276,7 @@ export const shouldAutoReply = async (email) => {
       category: classification.category,
       priority: priority,
       confidence: classification.confidence,
+      urgencyAnalysis,
     };
   }
 
@@ -157,13 +287,42 @@ export const shouldAutoReply = async (email) => {
       category: classification.category,
       priority: priority,
       confidence: classification.confidence,
+      urgencyAnalysis,
     };
+  }
+
+  // Special handling for confirmed urgent messages with business impact
+  if (
+    urgencyAnalysis.containsBusinessImpact ||
+    urgencyAnalysis.urgencyScore > 0.4 ||
+    classification.category === "urgent inquiry"
+  ) {
+    // Even with lower confidence, urgent business-impacting issues should get auto-reply
+    const confidenceThreshold = urgencyAnalysis.containsBusinessImpact
+      ? URGENT_CONFIDENCE_THRESHOLD
+      : AUTO_REPLY_CONFIDENCE_THRESHOLD;
+
+    if (
+      classification.confidence >= confidenceThreshold ||
+      urgencyAnalysis.urgencyScore > 0.7
+    ) {
+      return {
+        shouldReply: true,
+        reason: `Urgent message detected (${urgencyAnalysis.urgencyScore.toFixed(
+          2
+        )} score)`,
+        category: classification.category,
+        priority: "urgent",
+        confidence: classification.confidence,
+        urgencyAnalysis,
+      };
+    }
   }
 
   // Check if confidence is too low for auto-reply
   if (
     classification.confidence < AUTO_REPLY_CONFIDENCE_THRESHOLD &&
-    !containsUrgentKeywords
+    !urgencyAnalysis.isUrgent
   ) {
     return {
       shouldReply: false,
@@ -173,32 +332,30 @@ export const shouldAutoReply = async (email) => {
       category: classification.category,
       priority: priority,
       confidence: classification.confidence,
+      urgencyAnalysis,
     };
   }
 
-  // Short messages without urgent keywords should be handled by humans
-  if (isVeryShort && !containsUrgentKeywords) {
+  // Short messages without urgent indicators should be handled by humans
+  if (isVeryShort && !urgencyAnalysis.isUrgent) {
     return {
       shouldReply: false,
       reason: "Message too short for confident classification",
       category: classification.category,
       priority: priority,
       confidence: classification.confidence,
+      urgencyAnalysis,
     };
   }
 
-  if (
-    autoReplyCategories.includes(classification.category) ||
-    (classification.category === "general inquiry" && containsUrgentKeywords)
-  ) {
+  if (autoReplyCategories.includes(classification.category)) {
     return {
       shouldReply: true,
-      reason: containsUrgentKeywords
-        ? "Contains urgent keywords"
-        : `Matches auto-reply category: ${classification.category}`,
+      reason: `Matches auto-reply category: ${classification.category}`,
       category: classification.category,
       priority: priority,
       confidence: classification.confidence,
+      urgencyAnalysis,
     };
   }
 
@@ -208,6 +365,7 @@ export const shouldAutoReply = async (email) => {
     category: classification.category,
     priority: priority,
     confidence: classification.confidence,
+    urgencyAnalysis,
   };
 };
 
@@ -220,6 +378,14 @@ export const analyzeEmail = async (emailData) => {
   console.log(`Reason: ${result.reason}`);
   console.log(`Priority: ${result.priority}`);
   console.log(`Confidence: ${result.confidence.toFixed(2)}`);
+  if (result.urgencyAnalysis) {
+    console.log(
+      `Urgency score: ${result.urgencyAnalysis.urgencyScore.toFixed(2)}`
+    );
+    console.log(
+      `Business impact: ${result.urgencyAnalysis.containsBusinessImpact}`
+    );
+  }
 
   return result;
 };
