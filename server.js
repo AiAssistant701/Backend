@@ -19,6 +19,7 @@ import {
   googleStrategyConfig,
   handleGoogleAuth,
 } from "./utils/strategy/googleStrategy.js";
+import './utils/cron-jobs/emailAutoReply.js'
 
 dotenv.config();
 
