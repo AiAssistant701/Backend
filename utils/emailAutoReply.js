@@ -1,6 +1,5 @@
 import { classifyText } from "../services/classifyEmailService.js";
 import { getUnreadEmails, sendAutoReply } from "../integrations/gmailService.js";
-import { provideQuickAnswers } from "../services/researchService.js";
 import { logAIDecision } from "../usecases/aiDecicionLogs.js";
 
 // =======================

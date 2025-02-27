@@ -24,3 +24,6 @@ export const classifyText = async (text) => {
   const result = await classifier(text, EMAIL_CATEGORIES);
   return result.labels[0]; // Return highest-scoring category
 };
+
+const result = await classifyText("Stop that");
+console.log(result)
