@@ -1,4 +1,4 @@
-import { shouldAutoReply } from "../../services/classifyEmailService.js";
+import { shouldAutoReply } from "./classifyEmail.js";
 import {
   getUnreadEmails,
   sendAutoReply,
