@@ -218,7 +218,7 @@ export const classifyPriority = async (text) => {
 export const shouldAutoReply = async (email) => {
   // Extract more context from the email
   const subject = email.subject || "";
-  const body = email.body || "";
+  const body = email.snippet || "";
   const fullText = [subject, body].join(" ");
 
   const urgencyAnalysis = analyzeUrgency(fullText);
@@ -370,28 +370,28 @@ export const shouldAutoReply = async (email) => {
 };
 
 // test
-export const analyzeEmail = async (emailData) => {
-  const result = await shouldAutoReply(emailData);
+// export const analyzeEmail = async (emailData) => {
+//   const result = await shouldAutoReply(emailData);
 
-  console.log(`Category: ${result.category}`);
-  console.log(`Should auto-reply: ${result.shouldReply}`);
-  console.log(`Reason: ${result.reason}`);
-  console.log(`Priority: ${result.priority}`);
-  console.log(`Confidence: ${result.confidence.toFixed(2)}`);
-  if (result.urgencyAnalysis) {
-    console.log(
-      `Urgency score: ${result.urgencyAnalysis.urgencyScore.toFixed(2)}`
-    );
-    console.log(
-      `Business impact: ${result.urgencyAnalysis.containsBusinessImpact}`
-    );
-  }
+//   console.log(`Category: ${result.category}`);
+//   console.log(`Should auto-reply: ${result.shouldReply}`);
+//   console.log(`Reason: ${result.reason}`);
+//   console.log(`Priority: ${result.priority}`);
+//   console.log(`Confidence: ${result.confidence.toFixed(2)}`);
+//   if (result.urgencyAnalysis) {
+//     console.log(
+//       `Urgency score: ${result.urgencyAnalysis.urgencyScore.toFixed(2)}`
+//     );
+//     console.log(
+//       `Business impact: ${result.urgencyAnalysis.containsBusinessImpact}`
+//     );
+//   }
 
-  return result;
-};
+//   return result;
+// };
 
-const result = await analyzeEmail({
-  subject: "System down",
-  body: "Our entire system is currently down and we can't process customer orders. This is affecting our business operations. We need immediate assistance to restore service.",
-});
-console.log(result);
+// const result = await analyzeEmail({
+//   subject: "System down",
+//   body: "Our entire system is currently down and we can't process customer orders. This is affecting our business operations. We need immediate assistance to restore service.",
+// });
+// console.log(result);

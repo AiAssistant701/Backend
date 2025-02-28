@@ -21,3 +21,8 @@ export const extractEventDetails = async (text) => {
   const response = await axios.post(`${process.env.PYTHON_AI_URL}/extract-event/`, { text });
   return response.data.event;
 };
+
+export const extractEmail = (sender) => {
+  const match = sender.match(/<(.*?)>/);
+  return match ? match[1] : sender;
+};

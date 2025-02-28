@@ -94,11 +94,12 @@ const getFallbackResponse = (email) => {
     [Auto-Reply System]`;
 };
 
-const testEmail = {
-  subject: "New email",
-  snippet: "How do I add a number on whatsapp.",
-};
+// test
+// const testEmail = {
+//   subject: "New email",
+//   snippet: "How do I add a number on whatsapp.",
+// };
 
-generateAutoReply(testEmail)
-  .then((reply) => console.log(reply))
-  .catch((error) => console.error(error));
+// generateAutoReply(testEmail)
+//   .then((reply) => console.log(reply))
+//   .catch((error) => console.error(error));

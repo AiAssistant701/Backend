@@ -1,4 +1,5 @@
 import { google } from "googleapis";
+import { extractEmail } from "../utils/helpers.js";
 import { getUserTokens } from "../usecases/users.js";
 import { provideQuickAnswers } from "../services/researchService.js";
 
@@ -174,31 +175,37 @@ export const summarizeUnreadEmails = async (googleId) => {
 // Sends an auto-reply via Gmail API
 // =======================
 export const sendAutoReply = async (googleId, email, message) => {
-  const tokens = await getUserTokens(googleId);
-  if (!tokens) throw new Error("No Google authentication found for user.");
+  try {
+    const tokens = await getUserTokens(googleId);
+    if (!tokens) throw new Error("No Google authentication found for user.");
 
-  const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials(tokens);
+    const oauth2Client = new google.auth.OAuth2();
+    oauth2Client.setCredentials(tokens);
 
-  const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+    const gmail = google.gmail({ version: "v1", auth: oauth2Client });
 
-  const emailBody = [
-    `To: ${email.sender}`,
-    "Subject: Re: " + email.subject,
-    "MIME-Version: 1.0",
-    "Content-Type: text/plain; charset=UTF-8",
-    "",
-    message,
-  ].join("\n");
+    let sendTo = extractEmail(email.from);
 
-  const encodedMessage = Buffer.from(emailBody).toString("base64");
+    const emailBody = [
+      `To: ${sendTo}`,
+      "Subject: Re: " + email.subject,
+      "MIME-Version: 1.0",
+      "Content-Type: text/plain; charset=UTF-8",
+      "",
+      message,
+    ].join("\n");
 
-  await gmail.users.messages.send({
-    userId: "me",
-    requestBody: {
-      raw: encodedMessage,
-    },
-  });
+    const encodedMessage = Buffer.from(emailBody).toString("base64");
 
-  return { message: "Auto-reply sent", to: email.sender };
+    await gmail.users.messages.send({
+      userId: "me",
+      requestBody: {
+        raw: encodedMessage,
+      },
+    });
+
+    return { message: "Auto-reply sent", to: email.sender };
+  } catch (error) {
+    throw new Error(`Gmail API Error: ${error.message}`);
+  }
 };
