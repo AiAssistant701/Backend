@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import { processAutoReplies } from "../emailAutoReply.js";
+import { processAutoReplies } from "../emailAutoReply/emailAutoReply.js";
 
 // =======================
 // Runs auto-reply processing every 15 minutes
