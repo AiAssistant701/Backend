@@ -20,26 +20,25 @@ const getLocalModel = async () => {
 // Generates an automatic reply based on the email content using Gemini AI.
 // =======================
 export const generateAutoReply = async (email) => {
-  const prompt = `
-    Given this email:
-    Subject: ${email.subject}
-    Content: ${email.snippet}
-
-    Generate a professional and friendly auto-reply that:
-    1. Acknowledges receipt of the email
-    2. Provides an estimated response timeframe
-    3. Is concise and clear
-    4. Do NOT use placeholders like [Your Name]. And if a time is required to be mentioned, use 2 hours
-    5. Do NOT include the original email content in the auto-reply
-    6. Do NOT include the original email subject in the auto-reply
-    7. Provide a response using the email snippet as a reference
-
-    Reply:`;
-
   try {
     if (process.env.GEMINI_API_KEY) {
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      const prompt = `
+      Given this email:
+      Subject: ${email.subject}
+      Content: ${email.snippet}
+      
+      Generate a professional, empathetic, and helpful auto-reply that:
+      1. Acknowledges receipt of the email.
+      2. If the email snippet contains a direct question, provide a brief answer.
+      3. Provides an estimated response timeframe, such as 2 hours, or 1 business day, depending on the complexity of the issue.
+      4. Is concise and clear, replying in a single paragraph.
+      5. Do NOT use placeholders like [Your Name].
+      6. Do NOT include the original email content or subject in the auto-reply.
+      
+      Reply:`;
 
       const result = await model.generateContent(prompt);
       const response = result.response;
@@ -96,8 +95,8 @@ const getFallbackResponse = (email) => {
 };
 
 const testEmail = {
-  subject: "Inquiry",
-  snippet: "Your site has crashed.",
+  subject: "New email",
+  snippet: "How do I add a number on whatsapp.",
 };
 
 generateAutoReply(testEmail)
