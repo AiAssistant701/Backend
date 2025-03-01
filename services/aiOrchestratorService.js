@@ -5,7 +5,7 @@ import { analyzeBankStatement } from "./financeService.js";
 import { manageEmailInbox, scheduleMeetings } from "./messagingService.js";
 import { retrieveFiles } from "./fileService.js";
 import { performResearch, provideQuickAnswers } from "./researchService.js";
-import { generateReport } from "./reportGeneratorService.js";
+import { generateReport } from "../utils/helpers.js";
 import {
   createCalendarEvent,
   getUpcomingEvents,
@@ -165,9 +165,9 @@ export const aiOrchestrator = async (taskType, payload) => {
         break;
 
       case REPORT_GENERATION:
-        modelUsed = "AI Report Generator";
-        reasoning = "AI-powered report generation engine.";
-        result = await generateReport(payload);
+        modelUsed = "Google Gemma + Pinecone";
+        reasoning = "Efficient model for real-time responses.";
+        result = await provideQuickAnswers(payload.query);
         decisionScore = 0.95;
         break;
 

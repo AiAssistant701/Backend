@@ -8,6 +8,7 @@ import {
   QUICK_ANSWERS,
   UPLOAD_FILE,
   FILE_RETRIEVAL,
+  REPORT_GENERATION,
 } from "../utils/constants.js";
 
 const handleAIRequest = async (req, res, next) => {
@@ -71,6 +72,11 @@ const handleAIRequest = async (req, res, next) => {
 
       case FILE_RETRIEVAL:
         payload = { ...payload, query: text };
+
+        break;
+
+      case REPORT_GENERATION:
+        payload = { query: `Generate a report for ${text}` };
 
         break;
     }

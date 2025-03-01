@@ -4,7 +4,7 @@ import { processAutoReplies } from "../emailAutoReply/emailAutoReply.js";
 // =======================
 // Runs auto-reply processing every 15 minutes
 // =======================
-cron.schedule("* * * * *", async () => {
+cron.schedule("*/15 * * * *", async () => {
   console.log("🔄 Running Auto-Reply Cron Job...");
 
   try {
