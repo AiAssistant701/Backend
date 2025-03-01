@@ -19,7 +19,7 @@ import {
   googleStrategyConfig,
   handleGoogleAuth,
 } from "./utils/strategy/googleStrategy.js";
-import './utils/cron-jobs/emailAutoReply.js'
+// import './utils/cron-jobs/emailAutoReply.js'
 
 dotenv.config();
 
@@ -30,6 +30,8 @@ connectDB();
 // Trust Proxy (for rate limiting behind proxies)
 app.set("trust proxy", 1);
 
+const allowedOrigins = ["http://localhost:3000", process.env.FRONTEND_URL];
+
 // ======================
 // Middleware Setup
 // ======================
@@ -38,12 +40,20 @@ app.use(helmet());
 app.use(morgan("dev"));
 app.use(compression());
 app.use(cookieParser());
-app.use(cors({
-  origin: "http://localhost:3000",
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 // Rate Limiting
 const limiter = rateLimit({

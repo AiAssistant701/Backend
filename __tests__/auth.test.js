@@ -45,7 +45,7 @@ describe("Auth API", () => {
     const res = await request(app).post("/api/auth/signup").send(userData);    
     expect(res.statusCode).toBe(201);
     expect(res.body).toHaveProperty("success", true);
-    expect(res.body.data).toHaveProperty("_id");
+    expect(res.body.data).toHaveProperty("id");
     expect(res.body.data).toHaveProperty("email", userData.email);
   });
 
@@ -73,7 +73,7 @@ describe("Auth API", () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty("success", true);
-    expect(res.body.data).toHaveProperty("_id");
+    expect(res.body.data).toHaveProperty("id");
     expect(res.body.data).toHaveProperty("email", userData.email);
   });
 
@@ -108,7 +108,7 @@ describe("Password Reset API", () => {
     });
 
     // Generate a reset token
-    resetToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+    resetToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
   });
@@ -133,7 +133,7 @@ describe("Password Reset API", () => {
     expect(response.body.message).toBe("Password reset successful");
 
     // Verify that the password was hashed and updated
-    const updatedUser = await User.findById(user._id);
+    const updatedUser = await User.findById(user.id);
     const isMatch = await bcrypt.compare(
       "NewPassword123!",
       updatedUser.password
@@ -144,7 +144,7 @@ describe("Password Reset API", () => {
   it("Should reject expired token", async () => {
     // Generate an expired token
     const expiredToken = jwt.sign(
-      { userId: user._id },
+      { userId: user.id },
       process.env.JWT_SECRET,
       {
         expiresIn: "-1s", // Expired immediately

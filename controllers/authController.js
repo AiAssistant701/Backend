@@ -55,7 +55,7 @@ export const registerUser = async (req, res, next) => {
       user = user.toJSON();
       jwt.sign(
         {
-          id: user._id,
+          id: user.id,
         },
         process.env.EMAIL_JWT_SECRET,
         {
@@ -82,7 +82,7 @@ export const registerUser = async (req, res, next) => {
 
       return responseHandler(
         res,
-        { _id: user.id, name: user.name, email: user.email },
+        { id: user.id, name: user.name, email: user.email },
         "User registered",
         201
       );
@@ -97,6 +97,7 @@ export const registerUser = async (req, res, next) => {
 // @route   POST /api/auth/login
 // @desc    Authenticate user & get token
 export const loginUser = async (req, res, next) => {
+  let user;
   const { identity, password } = req.body;
 
   try {
@@ -110,7 +111,7 @@ export const loginUser = async (req, res, next) => {
     const isEmail = emailRegex.test(identity);
     const userField = isEmail ? "email" : "phoneNumber";
 
-    const user = await User.findOne({ [userField]: identity });
+    user = await User.findOne({ [userField]: identity });
 
     if (user && (await user.matchPassword(password))) {
       if (!user.emailVerified) {
@@ -119,11 +120,12 @@ export const loginUser = async (req, res, next) => {
           message: "Please confirm your email to login!",
         });
       }
+      user = user.toJSON();
 
-      generateToken(res, user._id);
+      generateToken(res, user.id);
       return responseHandler(
         res,
-        { _id: user._id, name: user.name, email: user.email },
+        { id: user.id, name: user.name, email: user.email },
         "User logged in"
       );
     } else {
@@ -166,16 +168,19 @@ export const verifyEmail = async (req, res, next) => {
 // @route   POST /api/auth/forgot-password
 // @desc    Send password reset email
 export const requestPasswordReset = async (req, res, next) => {
+  let user;
   const { email } = req.body;
 
   try {
-    const user = await User.findOne({ email });
+    user = await User.findOne({ email });
 
     if (!user) {
       return next({ statusCode: 404, message: "User not found" });
     }
 
-    const resetToken = generateResetToken(user._id);
+    user = user.toJSON();
+
+    const resetToken = generateResetToken(user.id);
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
     // Send email
