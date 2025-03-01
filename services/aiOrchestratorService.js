@@ -1,11 +1,6 @@
-import { processResearchPaper } from "./researchService.js";
 import { processMessage } from "./messagingService.js";
-import { organizeFiles } from "./fileService.js";
 import { analyzeBankStatement } from "./financeService.js";
-import { manageEmailInbox, scheduleMeetings } from "./messagingService.js";
-import { retrieveFiles } from "./fileService.js";
-import { performResearch, provideQuickAnswers } from "./researchService.js";
-import { generateReport } from "../utils/helpers.js";
+import { chatbotService } from "./chatbotService.js";
 import {
   createCalendarEvent,
   getUpcomingEvents,
@@ -22,7 +17,6 @@ import {
   organizeFilesInDrive,
 } from "../integrations/files/googleDriveService.js";
 import {
-  generateReports,
   trackProgress,
   provideHealthReminders,
 } from "./productivityService.js";
@@ -160,14 +154,14 @@ export const aiOrchestrator = async (taskType, payload) => {
       case QUICK_ANSWERS:
         modelUsed = "Google Gemma + Pinecone";
         reasoning = "Efficient model for real-time responses.";
-        result = await provideQuickAnswers(payload.query);
+        result = await chatbotService(taskType, payload.query);
         decisionScore = 0.98;
         break;
 
       case REPORT_GENERATION:
         modelUsed = "Google Gemma + Pinecone";
         reasoning = "Efficient model for real-time responses.";
-        result = await provideQuickAnswers(payload.query);
+        result = await chatbotService(taskType, payload.query);
         decisionScore = 0.95;
         break;
 

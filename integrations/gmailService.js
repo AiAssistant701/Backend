@@ -1,7 +1,7 @@
 import { google } from "googleapis";
 import { extractEmail } from "../utils/helpers.js";
 import { getUserTokens } from "../usecases/users.js";
-import { provideQuickAnswers } from "../services/researchService.js";
+import { chatbotService } from "../services/chatbotService.js";
 
 // =======================
 // to send email
@@ -13,7 +13,7 @@ export const sendEmail = async (googleId, to, subject, message) => {
 
     if (message.toLowerCase().startsWith("about")) {
       let template = `Generate a professional email ${message}. Do NOT use placeholders like [Your Name]. If a value is unknown, omit it instead.`;
-      let response = await provideQuickAnswers(template);
+      let response = await chatbotService("send_email", template);
       message = response.response;
     }
     const oauth2Client = new google.auth.OAuth2(
