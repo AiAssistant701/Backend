@@ -7,9 +7,35 @@ classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnl
 qa_pipeline = pipeline("question-answering", model="distilbert-base-cased-distilled-squad")
 
 def summarize_text(text):
-    """Summarizes text using Hugging Face BART model."""
-    return summarizer(text, max_length=130, min_length=30, do_sample=False)[0]["summary_text"]
+    MAX_INPUT_LENGTH = 1024  # BART max tokens
+    SAFE_CHUNK_SIZE = 900  # To prevent exceeding model limits
 
+    words = text.split()
+    
+    # If input is too large, split it into smaller chunks
+    if len(words) > SAFE_CHUNK_SIZE:
+        print("⚠️ Input too long! Splitting into chunks...")
+
+        chunks = []
+        for i in range(0, len(words), SAFE_CHUNK_SIZE):
+            chunk = " ".join(words[i:i + SAFE_CHUNK_SIZE])
+            chunks.append(chunk)
+
+        # Summarize each chunk separately
+        summarized_chunks = []
+        for chunk in chunks:
+            try:
+                summary = summarizer(chunk, max_length=150, min_length=50, do_sample=False)[0]["summary_text"]
+                summarized_chunks.append(summary)
+            except Exception as e:
+                print(f"❌ Error summarizing chunk: {e}")
+
+        # Summarize the combined summary
+        final_summary_input = " ".join(summarized_chunks)
+        return summarizer(final_summary_input, max_length=150, min_length=50, do_sample=False)[0]["summary_text"]
+
+    # If input is within limits, summarize directly
+    return summarizer(text, max_length=150, min_length=50, do_sample=False)[0]["summary_text"]
 
 def classify_text(text):
     """

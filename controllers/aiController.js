@@ -9,6 +9,7 @@ import {
   UPLOAD_FILE,
   FILE_RETRIEVAL,
   REPORT_GENERATION,
+  MARKET_RESEARCH,
 } from "../utils/constants.js";
 
 const handleAIRequest = async (req, res, next) => {
@@ -20,6 +21,7 @@ const handleAIRequest = async (req, res, next) => {
     console.log("taskType", taskType);
 
     let payload = {
+      userId: user._id,
       googleId: user.googleId,
     };
 
@@ -77,6 +79,11 @@ const handleAIRequest = async (req, res, next) => {
 
       case REPORT_GENERATION:
         payload = { query: `Generate a report for ${text}` };
+
+        break;
+
+      case MARKET_RESEARCH:
+        payload = { ...payload, query: text };
 
         break;
     }

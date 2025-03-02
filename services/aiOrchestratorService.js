@@ -1,6 +1,7 @@
 import { processMessage } from "./messagingService.js";
 import { analyzeBankStatement } from "./financeService.js";
 import { chatbotService } from "./chatbotService.js";
+import { performMarketResearch } from "./research/marketResearch.js";
 import {
   createCalendarEvent,
   getUpcomingEvents,
@@ -147,7 +148,7 @@ export const aiOrchestrator = async (taskType, payload) => {
       case MARKET_RESEARCH:
         modelUsed = "Hugging Face NLP";
         reasoning = "AI research model used for trend analysis.";
-        result = await performResearch(payload);
+        result = await performMarketResearch(payload);
         decisionScore = 0.93;
         break;
 
