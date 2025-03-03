@@ -1,6 +1,14 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
+const apiKeySchema = new mongoose.Schema(
+  {
+    provider: { type: String, required: true },
+    key: { type: String, required: true },
+  },
+  { timestamps: true }
+);
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -36,6 +44,7 @@ const userSchema = new mongoose.Schema(
     googleId: {
       type: String,
     },
+    apiKeys: [apiKeySchema],
     tokens: {
       accessToken: { type: String },
       refreshToken: { type: String },
