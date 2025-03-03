@@ -15,19 +15,20 @@ import {
 const handleAIRequest = async (req, res, next) => {
   try {
     let user = req.user;
-    const { text } = req.body;
+    const { provider, prompt } = req.body;
     // example text: Send an email to johndoe@example.com subject Meeting Update message The meeting is at 3 PM.
-    const taskType = await userIntent(text);
+    const taskType = await userIntent(prompt);
     console.log("taskType", taskType);
 
     let payload = {
-      userId: user._id,
+      userId: user.id,
+      provider,
       googleId: user.googleId,
     };
 
     switch (taskType) {
       case SEND_EMAIL:
-        const emailDetails = extractEmailDetails(text);
+        const emailDetails = extractEmailDetails(prompt);
         if (!emailDetails) {
           return next({
             statusCode: 400,
@@ -40,7 +41,7 @@ const handleAIRequest = async (req, res, next) => {
         break;
 
       case MEETING_SCHEDULING:
-        const eventDetails = await extractEventDetails(text);
+        const eventDetails = await extractEventDetails(prompt);
         console.log("eventDetails", eventDetails);
         if (!eventDetails) {
           return next({
@@ -54,7 +55,7 @@ const handleAIRequest = async (req, res, next) => {
         break;
 
       case QUICK_ANSWERS:
-        payload = { ...payload, query: text };
+        payload = { ...payload, query: prompt };
 
         break;
 
@@ -73,17 +74,17 @@ const handleAIRequest = async (req, res, next) => {
         break;
 
       case FILE_RETRIEVAL:
-        payload = { ...payload, query: text };
+        payload = { ...payload, query: prompt };
 
         break;
 
       case REPORT_GENERATION:
-        payload = { query: `Generate a report for ${text}` };
+        payload = { ...payload, query: `Generate a report for ${prompt}` };
 
         break;
 
       case MARKET_RESEARCH:
-        payload = { ...payload, query: text };
+        payload = { ...payload, query: prompt };
 
         break;
     }

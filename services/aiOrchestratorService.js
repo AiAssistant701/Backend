@@ -155,14 +155,14 @@ export const aiOrchestrator = async (taskType, payload) => {
       case QUICK_ANSWERS:
         modelUsed = "Google Gemma + Pinecone";
         reasoning = "Efficient model for real-time responses.";
-        result = await chatbotService(taskType, payload.query);
+        result = await chatbotService(taskType, payload);
         decisionScore = 0.98;
         break;
 
       case REPORT_GENERATION:
         modelUsed = "Google Gemma + Pinecone";
         reasoning = "Efficient model for real-time responses.";
-        result = await chatbotService(taskType, payload.query);
+        result = await chatbotService(taskType, payload);
         decisionScore = 0.95;
         break;
 

@@ -46,8 +46,8 @@ const userSchema = new mongoose.Schema(
     },
     apiKeys: [apiKeySchema],
     tokens: {
-      accessToken: { type: String },
-      refreshToken: { type: String },
+      access_token: { type: String },
+      refresh_token: { type: String },
     },
     phoneNumberVerified: {
       type: Boolean,

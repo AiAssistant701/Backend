@@ -11,12 +11,15 @@ export const saveUserTokens = async (googleId, tokens) => {
     { new: true }
   );
 
-  return user ? user : null;
+  return user ? user.toJSON() : null;
 };
 
-export const getUserTokens = async (googleId) => {
+// =======================
+// get user by googleId
+// =======================
+export const getUserByGoogleID = async (googleId) => {
   const user = await User.findOne({ googleId });
-  return user ? user.tokens : null;
+  return user ? user.toJSON() : null;
 };
 
 // =======================
@@ -28,8 +31,8 @@ export const updateUserWithTokens = async (email, googleId, tokens) => {
     {
       $set: {
         googleId,
-        "tokens.accessToken": tokens.accessToken,
-        "tokens.refreshToken": tokens.refreshToken || "",
+        "tokens.access_token": tokens.accessToken,
+        "tokens.refresh_token": tokens.refreshToken || "",
         emailVerified: true,
       },
     },
@@ -42,7 +45,7 @@ export const updateUserWithTokens = async (email, googleId, tokens) => {
 // =======================
 export const getUserByEmail = async (email) => {
   const user = await User.findOne({ email });
-  return user ? user : null;
+  return user ? user.toJSON() : null;
 };
 
 // =======================
@@ -59,5 +62,5 @@ export const createGoogleUser = async (profile, accessToken, refreshToken) => {
     tokens: { accessToken, refreshToken },
   });
 
-  return user ? user : null;
+  return user ? user.toJSON() : null;
 };

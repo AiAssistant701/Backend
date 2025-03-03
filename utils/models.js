@@ -1,6 +1,15 @@
 import axios from "axios";
 import User from "../models/User.js";
 import { decrypt } from "./crypto.js";
+import {
+  OPENAI,
+  COHERE,
+  HUGGINGFACE,
+  ANTHROPIC,
+  MISTRAL,
+  GEMINI,
+  GROK
+} from "./constants.js";
 
 export const callAIModel = async (userId, provider, prompt) => {
   const user = await User.findById(userId);
@@ -16,38 +25,48 @@ export const callAIModel = async (userId, provider, prompt) => {
     headers = { Authorization: `Bearer ${apiKey}` };
 
   switch (provider) {
-    case "openai":
+    case OPENAI:
       apiUrl = "https://api.openai.com/v1/completions";
       payload = { model: "gpt-4", prompt, max_tokens: 100 };
       break;
 
-    case "cohere":
+    case COHERE:
       apiUrl = "https://api.cohere.ai/generate";
       payload = { model: "command-r", prompt, max_tokens: 100 };
       break;
 
-    case "huggingface":
+    case HUGGINGFACE:
       apiUrl =
         "https://api-inference.huggingface.co/models/facebook/bart-large-cnn";
       payload = { inputs: prompt };
       break;
 
-    case "anthropic":
+    case ANTHROPIC:
       apiUrl = "https://api.anthropic.com/v1/complete";
       payload = { model: "claude-2", prompt, max_tokens: 100 };
       headers["x-api-key"] = apiKey; // Anthropic uses `x-api-key`
       break;
 
-    case "mistral":
+    case MISTRAL:
       apiUrl = "https://api.mistral.ai/v1/generate";
       payload = { model: "mistral-medium", prompt, max_tokens: 100 };
+      break;
+
+    case GEMINI:
+      apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateText?key=${apiKey}`;
+      payload = { prompt: { text: prompt } };
+      headers = { "Content-Type": "application/json" };
+      break;
+
+    case GROK:
+      apiUrl = "https://grok.x.com/api/v1/chat/completions";
+      payload = { model: "grok-1", prompt, max_tokens: 100 };
       break;
 
     default:
       throw new Error("Provider not supported");
   }
-
-  // Make API request
+  
   try {
     const response = await axios.post(apiUrl, payload, { headers });
     return response.data;
