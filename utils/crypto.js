@@ -1,4 +1,7 @@
+import dotenv from "dotenv";
 import crypto from "crypto";
+
+dotenv.config();
 
 const SECRET_KEY = process.env.ENCRYPTION_KEY;
 
