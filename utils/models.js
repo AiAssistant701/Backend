@@ -76,18 +76,22 @@ export const callAIModel = async (userId, provider, prompt) => {
   try {
     // Retrieve similar past prompts using Pinecone
     const embedding = await embedText(prompt);
+    console.log("embedding", embedding);
     const index = pinecone.index("ai-memory");
+    console.log("index", index);
     const queryResults = await index.query({
       vector: embedding,
       topK: 3, // Fetch top 3 similar responses
       includeMetadata: true,
     });
+    console.log("queryResults", queryResults);
 
     // Inject relevant past responses as context
     const similarResponses = queryResults.matches
       .map((match) => match.metadata?.response)
       .filter(Boolean)
       .join("\n");
+    console.log("similarResponses", similarResponses);
 
     if (similarResponses) {
       if (provider === ANTHROPIC) {
@@ -136,6 +140,7 @@ export const callAIModel = async (userId, provider, prompt) => {
 
     // Store response embedding in Pinecone
     const responseEmbedding = await embedText(aiResponse);
+    console.log("responseEmbedding", responseEmbedding);
     await index.upsert([
       {
         id: `${userId}-${Date.now()}`,
@@ -149,6 +154,9 @@ export const callAIModel = async (userId, provider, prompt) => {
 
     return aiResponse;
   } catch (error) {
+    console.error(
+      `API Error: ${JSON.stringify(error.response?.data, null, 2)}`
+    );
     throw new Error(
       `API call failed for ${provider}: ${
         error.response?.data?.error || error.message
