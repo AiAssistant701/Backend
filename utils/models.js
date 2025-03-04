@@ -39,8 +39,8 @@ export const callAIModel = async (userId, provider, prompt) => {
 
     case HUGGINGFACE:
       apiUrl =
-        "https://api-inference.huggingface.co/models/facebook/bart-large-cnn";
-      payload = { inputs: prompt };
+        "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2";
+      payload = { inputs: prompt, parameters: { max_new_tokens: 200 } };
       break;
 
     case ANTHROPIC:
@@ -114,7 +114,8 @@ export const callAIModel = async (userId, provider, prompt) => {
         aiResponse = response.data.generations?.[0]?.text;
         break;
       case HUGGINGFACE:
-        aiResponse = response.data[0]?.generated_text;
+        let initialResponse = response.data[0]?.generated_text;
+        aiResponse = initialResponse.replace(/^.*?\.\s*/, "");
         break;
       case ANTHROPIC:
         aiResponse = response.data.completion;
