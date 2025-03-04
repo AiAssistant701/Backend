@@ -8,8 +8,10 @@ import {
   ANTHROPIC,
   MISTRAL,
   GEMINI,
-  GROK
+  GROK,
 } from "./constants.js";
+import { embedText } from "./embeddings.js";
+import pinecone from "../services/pinecone/pineconeClient.js";
 
 export const callAIModel = async (userId, provider, prompt) => {
   const user = await User.findById(userId);
@@ -43,7 +45,11 @@ export const callAIModel = async (userId, provider, prompt) => {
 
     case ANTHROPIC:
       apiUrl = "https://api.anthropic.com/v1/complete";
-      payload = { model: "claude-2", prompt, max_tokens: 100 };
+      payload = {
+        model: "claude-2",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 100,
+      };
       headers["x-api-key"] = apiKey; // Anthropic uses `x-api-key`
       break;
 
@@ -66,10 +72,81 @@ export const callAIModel = async (userId, provider, prompt) => {
     default:
       throw new Error("Provider not supported");
   }
-  
+
   try {
+    // Retrieve similar past prompts using Pinecone
+    const embedding = await embedText(prompt);
+    const index = pinecone.index("ai-memory");
+    const queryResults = await index.query({
+      vector: embedding,
+      topK: 3, // Fetch top 3 similar responses
+      includeMetadata: true,
+    });
+
+    // Inject relevant past responses as context
+    const similarResponses = queryResults.matches
+      .map((match) => match.metadata?.response)
+      .filter(Boolean)
+      .join("\n");
+
+    if (similarResponses) {
+      if (provider === ANTHROPIC) {
+        payload.messages.unshift({
+          role: "system",
+          content: `Here is relevant context:\n\n${similarResponses}`,
+        });
+      } else if (provider === GEMINI) {
+        payload.prompt.text = `Context: ${similarResponses}\n\nUser: ${prompt}`;
+      } else {
+        payload.prompt = `Context: ${similarResponses}\n\nUser: ${prompt}`;
+      }
+    }
+
     const response = await axios.post(apiUrl, payload, { headers });
-    return response.data;
+
+    let aiResponse;
+    switch (provider) {
+      case OPENAI:
+      case GROK:
+        aiResponse = response.data.choices?.[0]?.text;
+        break;
+      case COHERE:
+        aiResponse = response.data.generations?.[0]?.text;
+        break;
+      case HUGGINGFACE:
+        aiResponse = response.data[0]?.generated_text;
+        break;
+      case ANTHROPIC:
+        aiResponse = response.data.completion;
+        break;
+      case MISTRAL:
+        aiResponse = response.data.generated_text;
+        break;
+      case GEMINI:
+        aiResponse = response.data.candidates?.[0]?.output;
+        break;
+      default:
+        aiResponse = "Unknown provider response";
+    }
+
+    if (!aiResponse) {
+      throw new Error(`Invalid response format from ${provider}`);
+    }
+
+    // Store response embedding in Pinecone
+    const responseEmbedding = await embedText(aiResponse);
+    await index.upsert([
+      {
+        id: `${userId}-${Date.now()}`,
+        values: responseEmbedding,
+        metadata: {
+          prompt,
+          response: aiResponse,
+        },
+      },
+    ]);
+
+    return aiResponse;
   } catch (error) {
     throw new Error(
       `API call failed for ${provider}: ${
