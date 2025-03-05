@@ -11,13 +11,14 @@ import {
   REPORT_GENERATION,
   MARKET_RESEARCH,
 } from "../utils/constants.js";
+import { classifyText } from "../utils/intentClassifier.js";
 
 const handleAIRequest = async (req, res, next) => {
   try {
     let user = req.user;
     const { provider, prompt } = req.body;
     // example text: Send an email to johndoe@example.com subject Meeting Update message The meeting is at 3 PM.
-    const taskType = await userIntent(prompt);
+    const taskType = await classifyText(prompt);
     console.log("taskType", taskType);
 
     let payload = {
