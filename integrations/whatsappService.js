@@ -1,6 +1,6 @@
 import axios from "axios";
+import { classifyIntent } from "../utils/intentClassifier.js";
 import responseHandler from "../middlewares/responseHandler.js";
-import { userIntent } from "../services/userIntentService.js";
 import { aiOrchestrator } from "../services/aiOrchestratorService.js";
 
 const WHATSAPP_API_URL = "https://graph.facebook.com/v16.0";
@@ -65,7 +65,7 @@ export const receiveWhatsAppMessage = async (req, res, next) => {
 
             console.log(`Received WhatsApp message from ${sender}: ${text}`);
             
-            const taskType = await userIntent(text); // user intent
+            const taskType = await classifyIntent(text); // user intent
 
             // fetch user by phone number
 

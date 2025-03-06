@@ -64,7 +64,7 @@ const classifier = async (text, labels) => {
 // =======================
 // Main classification function
 // =======================
-export const classifyText = async (text) => {
+export const classifyIntent = async (text) => {
   const labels = [
     "research_analysis",
     "message_processing",
@@ -425,7 +425,7 @@ export const classifyText = async (text) => {
 //   ];
 
 //   for (const testCase of testCases) {
-//     const result = await classifyText(testCase.prompt);
+//     const result = await classifyIntent(testCase.prompt);
 //     console.log(`Prompt: "${testCase.prompt}"`);
 //     console.log(`Expected: ${testCase.expected}, Got: ${result}`);
 //     console.log(result === testCase.expected ? "✅ Passed" : "❌ Failed");

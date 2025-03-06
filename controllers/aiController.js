@@ -1,4 +1,3 @@
-import { userIntent } from "../services/userIntentService.js";
 import responseHandler from "../middlewares/responseHandler.js";
 import { aiOrchestrator } from "../services/aiOrchestratorService.js";
 import { extractEmailDetails, extractEventDetails } from "../utils/helpers.js";
@@ -11,14 +10,14 @@ import {
   REPORT_GENERATION,
   MARKET_RESEARCH,
 } from "../utils/constants.js";
-import { classifyText } from "../utils/intentClassifier.js";
+import { classifyIntent } from "../utils/intentClassifier.js";
 
 const handleAIRequest = async (req, res, next) => {
   try {
     let user = req.user;
     const { provider, prompt } = req.body;
     // example text: Send an email to johndoe@example.com subject Meeting Update message The meeting is at 3 PM.
-    const taskType = await classifyText(prompt);
+    const taskType = await classifyIntent(prompt);
     console.log("taskType", taskType);
 
     let payload = {
