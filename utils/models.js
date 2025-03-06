@@ -48,13 +48,15 @@ export const callAIModel = async (userId, provider, prompt) => {
       break;
 
     case ANTHROPIC:
-      apiUrl = "https://api.anthropic.com/v1/complete";
+      apiUrl = "https://api.anthropic.com/v1/messages";
       payload = {
-        model: "claude-2",
+        model: "claude-3-opus-20240229",
+        system: "You are an AI assistant. Answer concisely.",
         messages: [{ role: "user", content: prompt }],
-        max_tokens: 100,
+        max_tokens: 512,
       };
       headers["x-api-key"] = apiKey; // Anthropic uses `x-api-key`
+      headers["anthropic-version"] = "2023-06-01";
       break;
 
     case MISTRAL:
@@ -95,10 +97,7 @@ export const callAIModel = async (userId, provider, prompt) => {
 
     if (similarResponses) {
       if (provider === ANTHROPIC) {
-        payload.messages.unshift({
-          role: "system",
-          content: `Here is relevant context:\n\n${similarResponses}`,
-        });
+        payload.system = `Here is relevant context:\n\n${similarResponses}`;
       } else if (provider === GEMINI) {
         payload.prompt.text = `Context: ${similarResponses}\n\nUser: ${prompt}`;
       } else {
@@ -107,7 +106,6 @@ export const callAIModel = async (userId, provider, prompt) => {
     }
 
     const response = await axios.post(apiUrl, payload, { headers });
-    console.log(22, response.data.message?.content[0].text)
 
     let aiResponse;
     switch (provider) {
@@ -123,7 +121,7 @@ export const callAIModel = async (userId, provider, prompt) => {
         aiResponse = initialResponse.replace(/^.*?\n+\s*/, "");
         break;
       case ANTHROPIC:
-        aiResponse = response.data.completion;
+        aiResponse = response.data?.content[0].text;
         break;
       case MISTRAL:
         aiResponse = response.data.generated_text;
