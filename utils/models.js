@@ -76,22 +76,18 @@ export const callAIModel = async (userId, provider, prompt) => {
   try {
     // Retrieve similar past prompts using Pinecone
     const embedding = await embedText(prompt);
-    console.log("embedding", embedding);
-    const index = pinecone.index("ai-memory");
-    console.log("index", index);
+    const index = pinecone.index(process.env.PINECONE_INDEX);
     const queryResults = await index.query({
       vector: embedding,
       topK: 3, // Fetch top 3 similar responses
       includeMetadata: true,
     });
-    console.log("queryResults", queryResults);
 
     // Inject relevant past responses as context
     const similarResponses = queryResults.matches
       .map((match) => match.metadata?.response)
       .filter(Boolean)
       .join("\n");
-    console.log("similarResponses", similarResponses);
 
     if (similarResponses) {
       if (provider === ANTHROPIC) {
@@ -119,7 +115,7 @@ export const callAIModel = async (userId, provider, prompt) => {
         break;
       case HUGGINGFACE:
         let initialResponse = response.data[0]?.generated_text;
-        aiResponse = initialResponse.replace(/^.*?\.\s*/, "");
+        aiResponse = initialResponse.replace(/^.*?\n+\s*/, "");
         break;
       case ANTHROPIC:
         aiResponse = response.data.completion;
@@ -140,7 +136,6 @@ export const callAIModel = async (userId, provider, prompt) => {
 
     // Store response embedding in Pinecone
     const responseEmbedding = await embedText(aiResponse);
-    console.log("responseEmbedding", responseEmbedding);
     await index.upsert([
       {
         id: `${userId}-${Date.now()}`,

@@ -1,13 +1,11 @@
-import axios from "axios";
-import dotenv from "dotenv";
-
-dotenv.config();
+import { pipeline } from "@huggingface/transformers";
 
 export const embedText = async (text) => {
-  const response = await axios.post(
-    "https://api.openai.com/v1/embeddings",
-    { input: text, model: "text-embedding-ada-002" },
-    { headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` } }
+  const embedder = await pipeline(
+    "feature-extraction",
+    "sentence-transformers/all-MiniLM-L6-v2"
   );
-  return response.data.data[0].embedding;
+  const result = await embedder(text, { pooling: "mean", normalize: true });
+
+  return Array.from(result.data);
 };

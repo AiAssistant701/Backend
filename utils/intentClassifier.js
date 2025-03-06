@@ -199,7 +199,6 @@ export const classifyText = async (text) => {
 
   // Second pass: NLP model classification
   const result = await classifier(textClean, labels);
-  console.log(22, result);
   const bestLabel = result.labels[0];
   const confidenceScore = result.scores[0];
   const secondBestLabel = result.labels[1];
