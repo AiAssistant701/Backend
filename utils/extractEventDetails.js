@@ -1,7 +1,7 @@
 // =======================
 // Extracts event details from natural language input with improved accuracy.
 // =======================
-function extractEventDetails(text) {
+export const extractEventDetailsc = (text) => {
   const now = new Date();
   const today = new Date(now);
   today.setHours(0, 0, 0, 0);
@@ -379,7 +379,7 @@ function extractEventDetails(text) {
     startTime: parsedDate.toISOString(),
     endTime: endDate.toISOString(),
   };
-}
+};
 
 // =======================
 // Helper function for next day calculation

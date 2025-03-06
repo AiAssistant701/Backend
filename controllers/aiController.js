@@ -1,6 +1,7 @@
 import responseHandler from "../middlewares/responseHandler.js";
 import { aiOrchestrator } from "../services/aiOrchestratorService.js";
-import { extractEmailDetails, extractEventDetails } from "../utils/helpers.js";
+import { extractEmailDetails } from "../utils/helpers.js";
+import { extractEventDetails } from "../utils/extractEventDetails.js";
 import {
   SEND_EMAIL,
   MEETING_SCHEDULING,
