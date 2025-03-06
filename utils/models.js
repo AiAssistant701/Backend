@@ -29,12 +29,16 @@ export const callAIModel = async (userId, provider, prompt) => {
   switch (provider) {
     case OPENAI:
       apiUrl = "https://api.openai.com/v1/completions";
-      payload = { model: "gpt-4", prompt, max_tokens: 100 };
+      payload = { model: "gpt-4o", prompt, max_tokens: 100 };
       break;
 
     case COHERE:
-      apiUrl = "https://api.cohere.ai/generate";
-      payload = { model: "command-r", prompt, max_tokens: 100 };
+      apiUrl = "https://api.cohere.ai/v2/chat";
+      payload = {
+        model: "command-r-plus",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 100,
+      };
       break;
 
     case HUGGINGFACE:
@@ -103,6 +107,7 @@ export const callAIModel = async (userId, provider, prompt) => {
     }
 
     const response = await axios.post(apiUrl, payload, { headers });
+    console.log(22, response.data.message?.content[0].text)
 
     let aiResponse;
     switch (provider) {
@@ -111,7 +116,7 @@ export const callAIModel = async (userId, provider, prompt) => {
         aiResponse = response.data.choices?.[0]?.text;
         break;
       case COHERE:
-        aiResponse = response.data.generations?.[0]?.text;
+        aiResponse = response.data.message?.content[0].text;
         break;
       case HUGGINGFACE:
         let initialResponse = response.data[0]?.generated_text;

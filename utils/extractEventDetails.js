@@ -1,7 +1,7 @@
 // =======================
 // Extracts event details from natural language input with improved accuracy.
 // =======================
-export const extractEventDetailsc = (text) => {
+export const extractEventDetails = (text) => {
   const now = new Date();
   const today = new Date(now);
   today.setHours(0, 0, 0, 0);

@@ -1,6 +1,7 @@
+import { extractEmailDetails } from "../utils/helpers.js";
+import { classifyIntent } from "../utils/intentClassifier.js";
 import responseHandler from "../middlewares/responseHandler.js";
 import { aiOrchestrator } from "../services/aiOrchestratorService.js";
-import { extractEmailDetails } from "../utils/helpers.js";
 import { extractEventDetails } from "../utils/extractEventDetails.js";
 import {
   SEND_EMAIL,
@@ -11,7 +12,6 @@ import {
   REPORT_GENERATION,
   MARKET_RESEARCH,
 } from "../utils/constants.js";
-import { classifyIntent } from "../utils/intentClassifier.js";
 
 const handleAIRequest = async (req, res, next) => {
   try {
