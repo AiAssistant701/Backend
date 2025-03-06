@@ -157,17 +157,18 @@ export const summarizeUnreadEmails = async (googleId) => {
 
     const summarizedEmails = await Promise.all(
       emails.map(async (email) => {
-        const response = await axios.post(
-          `${process.env.PYTHON_AI_URL}/summarize/`,
-          {
-            text: email.snippet,
-          }
-        );
+        let payload = {
+          userId: user.id,
+          query: `Generate a summary for this email: ${email.snippet}`,
+          provider: OPENAI,
+        };
+
+        let response = await chatbotService(SEND_EMAIL, payload);
 
         return {
           from: email.from,
           subject: email.subject,
-          summary: response.data.summary,
+          summary: response.response,
         };
       })
     );

@@ -10,10 +10,5 @@ export const chatbotService = async (taskType, payload) => {
 
   console.log("AI response", response);
 
-  // Implement quick answer retrieval from AI models
-  // const response = await axios.post(`${process.env.PYTHON_AI_URL}/qa/`, {
-  //   question: query,
-  // });
-
   return { message: taskType, response: response };
 };

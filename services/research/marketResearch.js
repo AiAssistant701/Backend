@@ -1,7 +1,9 @@
 import axios from "axios";
+import dotenv from "dotenv";
+import { MARKET_RESEARCH } from "../../utils/constants.js";
+import { chatbotService } from "../chatbotService.js";
 import { saveMarketResearch } from "../../usecases/markets.js";
 import { logAIDecision } from "../../usecases/aiDecicionLogs.js";
-import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -32,14 +34,11 @@ export const performMarketResearch = async (payload) => {
         .map((article) => article.description)
         .join("\n");
 
-    const response = await axios.post(
-      `${process.env.PYTHON_AI_URL}/summarize/`,
-      {
-        text: combinedText,
-      }
-    );
+    payload.query = `Generate a summary for this market research: ${combinedText}`;
 
-    const summary = response.data.summary;
+    let response = await chatbotService(MARKET_RESEARCH, payload);
+
+    const summary = response.response;
 
     // Save market research
     await saveMarketResearch(payload.userId, payload.query, summary, [
@@ -53,7 +52,7 @@ export const performMarketResearch = async (payload) => {
     // Log AI decision
     await logAIDecision(
       "MARKET_RESEARCH",
-      "Hugging Face BART",
+      payload.provider,
       0.95,
       "Summarized market research",
       executionTime
