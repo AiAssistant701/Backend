@@ -77,8 +77,12 @@ export const callAIModel = async (userId, provider, prompt) => {
       break;
 
     case GROK:
-      apiUrl = "https://grok.x.com/api/v1/chat/completions";
-      payload = { model: "grok-1", prompt, max_tokens: 100 };
+      apiUrl = "https://api.x.ai/v1/chat/completions";
+      payload = {
+        model: "grok-2-latest",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 100,
+      };
       break;
 
     default:
@@ -119,7 +123,7 @@ export const callAIModel = async (userId, provider, prompt) => {
     switch (provider) {
       case OPENAI:
       case GROK:
-        aiResponse = response.data.choices?.[0]?.text;
+        aiResponse = response.data.choices?.[0]?.message?.content;
         break;
       case COHERE:
         aiResponse = response.data.message?.content[0].text;
