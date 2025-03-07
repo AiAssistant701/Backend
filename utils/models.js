@@ -69,8 +69,10 @@ export const callAIModel = async (userId, provider, prompt) => {
       break;
 
     case GEMINI:
-      apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateText?key=${apiKey}`;
-      payload = { prompt: { text: prompt } };
+      apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash-001:generateContent?key=${apiKey}`;
+      payload = {
+        contents: [{ parts: [{ text: prompt }] }],
+      };
       headers = { "Content-Type": "application/json" };
       break;
 
@@ -103,7 +105,7 @@ export const callAIModel = async (userId, provider, prompt) => {
       if (provider === ANTHROPIC) {
         payload.system = `Here is relevant context:\n\n${similarResponses}`;
       } else if (provider === GEMINI) {
-        payload.prompt.text = `Context: ${similarResponses}\n\nUser: ${prompt}`;
+        payload.contents[0].parts[0].text = `Context: ${similarResponses}\n\nUser: ${prompt}`;
       } else if (provider === MISTRAL) {
         payload.messages[0].content = `Context: ${similarResponses}\n\nUser: ${prompt}`;
       } else {
@@ -133,7 +135,7 @@ export const callAIModel = async (userId, provider, prompt) => {
         aiResponse = response.data?.choices[0].message.content;
         break;
       case GEMINI:
-        aiResponse = response.data.candidates?.[0]?.output;
+        aiResponse = response.data.candidates?.[0]?.content.parts[0].text;
         break;
       default:
         aiResponse = "Unknown provider response";
