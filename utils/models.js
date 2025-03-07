@@ -60,8 +60,12 @@ export const callAIModel = async (userId, provider, prompt) => {
       break;
 
     case MISTRAL:
-      apiUrl = "https://api.mistral.ai/v1/generate";
-      payload = { model: "mistral-medium", prompt, max_tokens: 100 };
+      apiUrl = "https://api.mistral.ai/v1/chat/completions";
+      payload = {
+        model: "mistral-small-latest",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 100,
+      };
       break;
 
     case GEMINI:
@@ -100,6 +104,8 @@ export const callAIModel = async (userId, provider, prompt) => {
         payload.system = `Here is relevant context:\n\n${similarResponses}`;
       } else if (provider === GEMINI) {
         payload.prompt.text = `Context: ${similarResponses}\n\nUser: ${prompt}`;
+      } else if (provider === MISTRAL) {
+        payload.messages[0].content = `Context: ${similarResponses}\n\nUser: ${prompt}`;
       } else {
         payload.prompt = `Context: ${similarResponses}\n\nUser: ${prompt}`;
       }
@@ -124,7 +130,7 @@ export const callAIModel = async (userId, provider, prompt) => {
         aiResponse = response.data?.content[0].text;
         break;
       case MISTRAL:
-        aiResponse = response.data.generated_text;
+        aiResponse = response.data?.choices[0].message.content;
         break;
       case GEMINI:
         aiResponse = response.data.candidates?.[0]?.output;
