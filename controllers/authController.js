@@ -11,12 +11,7 @@ export const generateToken = (res, userId) => {
     expiresIn: "7d",
   });
 
-  res.cookie("jwt", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-  });
+  return token;
 };
 
 // Generate JWT Token for password reset (expires in 1 hour)
@@ -122,10 +117,10 @@ export const loginUser = async (req, res, next) => {
       }
       user = user.toJSON();
 
-      generateToken(res, user.id);
+      const token = generateToken(res, user.id);
       return responseHandler(
         res,
-        { id: user.id, name: user.name, email: user.email },
+        { id: user.id, name: user.name, email: user.email, token },
         "User logged in"
       );
     } else {

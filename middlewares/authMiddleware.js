@@ -2,11 +2,13 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
 const verifyToken = async (req, res, next) => {
-  let token = req.cookies.jwt;
+  const authHeader = req.headers.authorization;
 
-  if (!token) {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return next({ message: "Token is required!" });
   }
+
+  const token = authHeader.split(" ")[1];
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);

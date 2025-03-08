@@ -48,7 +48,7 @@ router.get(
     if (!req.user)
       return next({ statusCode: 401, message: "Authentication failed" });
 
-    generateToken(res, req.user.id);
+    const token = generateToken(res, req.user.id); // return token
 
     res.redirect("/"); // process.env.FRONTEND_URL
   }
