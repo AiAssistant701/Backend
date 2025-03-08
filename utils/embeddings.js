@@ -21,16 +21,15 @@ export const embedText = async (text) => {
     if (!embedderCache) {
       console.log("Initializing embedder model...");
 
-      // Explicit configuration for the model loading
+      // Explicit configuration for the model loading using the correct dtype value
       embedderCache = await pipeline(
         "feature-extraction",
         "sentence-transformers/all-MiniLM-L6-v2",
         {
-          // Explicitly set model options
-          quantized: memoryBefore.freeMem < 2, // Use quantization if low on memory
+          // Use "fp32" instead of "float32" as per the error message
+          dtype: "fp32",
           revision: "main",
-          dtype: "float32", // Explicitly set dtype
-          cache_dir: "./model-cache", // Set a specific cache directory
+          cache_dir: "./model-cache",
           progress_callback: (progress) => {
             if (progress.status) {
               console.log(`Model loading: ${progress.status}`);
@@ -61,21 +60,47 @@ export const embedText = async (text) => {
   } catch (error) {
     console.error("Error in embedding text:", error);
 
-    // Fallback to a simpler embedding approach if the model fails
-    // This is a very basic fallback that should work in low-memory situations
-    if (error.message.includes("memory") || error.message.includes("dtype")) {
-      console.log("Using fallback embedding method due to memory constraints");
-      return generateSimpleEmbedding(text);
+    // Check if it's a dtype-related error
+    if (error.message.includes("Invalid dtype")) {
+      // Try again with a different dtype if that was the issue
+      try {
+        console.log("Retrying with 'auto' dtype...");
+        if (!embedderCache) {
+          embedderCache = await pipeline(
+            "feature-extraction",
+            "sentence-transformers/all-MiniLM-L6-v2",
+            {
+              dtype: "auto", // Try with auto instead
+              revision: "main",
+              cache_dir: "./model-cache",
+            }
+          );
+        }
+
+        const result = await embedderCache(text, {
+          pooling: "mean",
+          normalize: true,
+          truncation: true,
+          max_length: 512,
+        });
+
+        return Array.from(result.data);
+      } catch (retryError) {
+        console.error("Retry also failed:", retryError);
+        return generateSimpleEmbedding(text);
+      }
     }
 
-    // Rethrow other errors
-    throw error;
+    // For any other errors, use the fallback
+    console.log("Using fallback embedding method due to error");
+    return generateSimpleEmbedding(text);
   }
 };
 
 // Simple fallback embedding function that doesn't require ML models
 const generateSimpleEmbedding = (text) => {
-  // Create a simple vector of 384 dimensions (matching all-MiniLM-L6-v2 output size)
+  console.log("Using simple embedding fallback");
+  // Create a vector of 384 dimensions (matching all-MiniLM-L6-v2 output size)
   const embedding = new Array(384).fill(0);
 
   // Generate embedding from character codes (very basic approach)
