@@ -28,8 +28,12 @@ export const callAIModel = async (userId, provider, prompt) => {
 
   switch (provider) {
     case OPENAI:
-      apiUrl = "https://api.openai.com/v1/completions";
-      payload = { model: "gpt-4o", prompt, max_tokens: 100 };
+      apiUrl = "https://api.openai.com/v1/chat/completions";
+      payload = {
+        model: "gpt-4o",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 100,
+      };
       break;
 
     case COHERE:
