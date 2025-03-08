@@ -2,6 +2,25 @@ import User from "../models/User.js";
 import { encrypt, decrypt } from "../utils/crypto.js";
 import responseHandler from "../middlewares/responseHandler.js";
 
+// @route   GET /api/v1/users/profile/:userId
+// @desc    Gets a user's profile
+export const getUserProfile = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) return next({ statusCode: 400, message: "User not found" });
+
+    const profile = {
+      name: user.name,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+    };
+
+    responseHandler(res, profile, "User profile retrieved!");
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @route   POST /api/v1/users/apikeys
 // @desc    Stores a user's api keys
 export const storeApiKeys = async (req, res, next) => {
@@ -28,7 +47,7 @@ export const storeApiKeys = async (req, res, next) => {
 export const getApiKeys = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.userId);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) return next({ statusCode: 400, message: "User not found" });
 
     const decryptedKeys = user.apiKeys.map(({ provider, key }) => ({
       provider,
