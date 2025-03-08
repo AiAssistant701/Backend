@@ -1,3 +1,4 @@
+import { getModelForTask } from "../utils/modelRouter.js";
 import { extractEmailDetails } from "../utils/helpers.js";
 import { classifyIntent } from "../utils/intentClassifier.js";
 import responseHandler from "../middlewares/responseHandler.js";
@@ -15,15 +16,22 @@ import {
 
 const handleAIRequest = async (req, res, next) => {
   try {
-    let user = req.user;
+    let user = req.user,
+      selectedProvider;
     const { provider, prompt } = req.body;
     // example text: Send an email to johndoe@example.com subject Meeting Update message The meeting is at 3 PM.
     const taskType = await classifyIntent(prompt);
     console.log("taskType", taskType);
 
+    selectedProvider = provider;
+    if (!provider) {
+      selectedProvider = getModelForTask(taskType);
+    }
+    console.log("selectedProvider", selectedProvider);
+
     let payload = {
       userId: user.id,
-      provider,
+      provider: selectedProvider,
       googleId: user.googleId,
     };
 
