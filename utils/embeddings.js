@@ -1,11 +1,17 @@
-import { pipeline } from "@huggingface/transformers";
+import { HfInference } from "@huggingface/inference";
+
+const hf = new HfInference(process.env.HUGGINGFACE_TOKEN);
 
 export const embedText = async (text) => {
-  const embedder = await pipeline(
-    "feature-extraction",
-    "sentence-transformers/all-MiniLM-L6-v2"
-  );
-  const result = await embedder(text, { pooling: "mean", normalize: true });
+  const model = "sentence-transformers/all-MiniLM-L6-v2";
+  const inputs = text;
 
-  return Array.from(result.data);
+  const result = await hf.featureExtraction({
+    model,
+    inputs,
+  });
+
+  console.log("result", result);
+
+  return result;
 };
