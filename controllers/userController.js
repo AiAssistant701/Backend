@@ -1,10 +1,11 @@
 import User from "../models/User.js";
 import { encrypt, decrypt } from "../utils/crypto.js";
+import { getUserTaskHistory } from "../usecases/taskHistory.js";
 import responseHandler from "../middlewares/responseHandler.js";
 
 // @route   GET /api/v1/users/profile/:userId
 // @desc    Gets a user's profile
-export const getUserProfile = async (req, res, next) => {
+export const fetchUserProfile = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.userId);
     if (!user) return next({ statusCode: 400, message: "User not found" });
@@ -87,6 +88,22 @@ export const deleteApiKeys = async (req, res, next) => {
     await User.updateOne({ _id: userId }, { $pull: { apiKeys: { provider } } });
 
     responseHandler(res, null, "API Key deleted successfully!");
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @route   GET /api/v1/users/task/history/:userId
+// @desc    Gets a user's task history
+export const fetchUserTaskHistory = async (req, res, next) => {
+  try {
+    const userId = req.params.userId
+    const user = await User.findById(userId);
+    if (!user) return next({ statusCode: 400, message: "User not found" });
+
+   const tasks = await getUserTaskHistory(userId)
+  
+    responseHandler(res, tasks, "User task history retrieved!");
   } catch (error) {
     next(error);
   }
