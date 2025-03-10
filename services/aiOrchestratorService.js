@@ -1,7 +1,7 @@
-import { processMessage } from "./messagingService.js";
-import { analyzeBankStatement } from "./financeService.js";
 import { chatbotService } from "./chatbotService.js";
+import { processMessage } from "./messagingService.js";
 import { performMarketResearch } from "./research/marketResearch.js";
+import { analyzeBankStatement } from "../utils/huggingfaceInference.js";
 import {
   createCalendarEvent,
   getUpcomingEvents,
@@ -66,7 +66,7 @@ export const aiOrchestrator = async (taskType, payload) => {
       case FINANCE_ANALYSIS:
         modelUsed = "Hugging Face FinBERT";
         reasoning = "FinBERT provides the best financial insights.";
-        result = await analyzeBankStatement(payload);
+        result = await analyzeBankStatement(payload.filePath);
         decisionScore = 0.97;
         break;
 

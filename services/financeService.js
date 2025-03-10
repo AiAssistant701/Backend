@@ -1,1 +1,1 @@
-export const analyzeBankStatement = () => {};
+export const analyzeBankStatement = (filePath) => {};

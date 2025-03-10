@@ -103,6 +103,7 @@ const handleAIRequest = async (req, res, next) => {
         break;
 
       case UPLOAD_FILE:
+      case FINANCE_ANALYSIS:
         if (!req.file) {
           return next({ statusCode: 400, message: "No file uploaded." });
         }

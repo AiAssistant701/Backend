@@ -10,7 +10,7 @@ import {
   GEMINI,
   GROK,
 } from "./constants.js";
-import { embedText } from "./embeddings.js";
+import { embedText } from "./huggingfaceInference.js";
 import pinecone from "../services/pinecone/pineconeClient.js";
 
 export const callAIModel = async (userId, provider, prompt) => {
