@@ -1,4 +1,5 @@
 import { HfInference } from "@huggingface/inference";
+import { insertTransactions } from "../usecases/transactions.js";
 
 const hf = new HfInference(process.env.HUGGINGFACE_TOKEN);
 
@@ -16,10 +17,10 @@ export const embedText = async (text) => {
 };
 
 //
-export const analyzeBankStatement = async (filePath) => {
+export const analyzeBankStatement = async (filePath, userId) => {
   const fileData = fs.readFileSync(filePath, { encoding: "base64" });
 
-  const text = await hf.documentQuestionAnswering({
+  const response = await hf.documentQuestionAnswering({
     model: "impira/layoutlm-document-qa",
     inputs: {
       image: fileData,
@@ -27,13 +28,30 @@ export const analyzeBankStatement = async (filePath) => {
     },
   });
 
-  return text.answers;
+  const transactions = response.answers.map((transaction) => ({
+    userId,
+    date: new Date(transaction.date),
+    description: transaction.text,
+    category: "Uncategorized",
+    amount: parseFloat(transaction.amount),
+  }));
+
+  await insertTransactions(transactions)
+
+  return transactions;
 };
 
 //
 export const categorizeTransactions = async (transactions) => {
-  return await hf.textClassification({
+  const categories = await hf.textClassification({
     model: "facebook/bart-large-mnli",
     inputs: transactions.map((t) => `Classify this transaction: ${t}`),
   });
+
+  const categorizedTransactions = transactions.map((transaction, index) => ({
+    ...transaction,
+    category: categories[index].label || "Uncategorized",
+  }));
+
+  return categorizedTransactions
 };
