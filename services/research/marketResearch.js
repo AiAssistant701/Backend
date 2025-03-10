@@ -59,9 +59,7 @@ export const performMarketResearch = async (payload) => {
     );
 
     return {
-      summary,
-      sources: googleSearchResults.data.items,
-      news: newsResults.data.articles,
+      response: summary,
     };
   } catch (error) {
     console.error("❌ Market Research Error:", error);

@@ -11,7 +11,5 @@ export const embedText = async (text) => {
     inputs,
   });
 
-  console.log("result", result);
-
   return result;
 };
