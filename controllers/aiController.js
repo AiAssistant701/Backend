@@ -18,6 +18,7 @@ import {
   FILE_RETRIEVAL,
   REPORT_GENERATION,
   MARKET_RESEARCH,
+  FINANCE_ANALYSIS
 } from "../utils/constants.js";
 
 dotenv.config();

@@ -13,6 +13,9 @@ const verifyToken = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.userId);
+    if (!user) {
+      next({ statusCode: 400, message: "User not found" });
+    }
     req.user = user.toJSON();
     next();
   } catch (error) {

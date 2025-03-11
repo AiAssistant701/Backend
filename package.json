@@ -33,6 +33,7 @@
     "express-rate-limit": "^7.5.0",
     "express-session": "^1.18.1",
     "express-validator": "^7.2.1",
+    "file-type": "^20.4.0",
     "googleapis": "^144.0.0",
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
@@ -47,7 +48,14 @@
     "openai": "^4.86.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "pdf-img-convert": "^2.0.0",
+    "pdf-lib": "^1.17.1",
+    "pdf-parse": "^1.1.1",
+    "pdf-poppler": "^0.2.1",
+    "pdf2image": "^1.2.3",
+    "pdf2pic": "^3.1.4",
     "regex": "^6.0.1",
+    "sharp": "^0.33.5",
     "winston": "^3.17.0"
   },
   "devDependencies": {
