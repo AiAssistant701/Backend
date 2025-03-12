@@ -36,10 +36,7 @@ router.post("/forgot-password", requestPasswordReset);
 router.post("/reset-password/:token", resetPassword);
 
 // =========GOOGLE SIGN-IN AUTH=============
-router.get(
-  "/google",
-  passport.authenticate("google")
-);
+router.get("/google", passport.authenticate("google"));
 
 router.get(
   "/google/callback",
@@ -48,9 +45,10 @@ router.get(
     if (!req.user)
       return next({ statusCode: 401, message: "Authentication failed" });
 
-    const token = generateToken(res, req.user.id); // return token
+    const token = generateToken(req.user.id);
 
-    res.redirect("/"); // process.env.FRONTEND_URL
+    const frontendURL = `${process.env.FRONTEND_URL}/auth/callback?token=${token}`;
+    return res.redirect(frontendURL);
   }
 );
 
