@@ -24,8 +24,8 @@ export const googleStrategyConfig = {
 };
 
 export const handleGoogleAuth = async (
-  accessToken,
-  refreshToken,
+  access_token,
+  refresh_token,
   profile,
   done
 ) => {
@@ -36,12 +36,12 @@ export const handleGoogleAuth = async (
       return done(new Error("No email provided from Google"), false);
     }
 
-    const tokens = { accessToken, refreshToken };
+    const tokens = { access_token, refresh_token };
 
     let user = await getUserByEmail(email);
 
     if (!user) {
-      user = await createGoogleUser(profile, accessToken, refreshToken);
+      user = await createGoogleUser(profile, access_token, refresh_token);
       if (!user) {
         return done(new Error("Failed to create user"), false);
       }

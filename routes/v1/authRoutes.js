@@ -11,6 +11,7 @@ import {
   generateToken,
 } from "../../controllers/authController.js";
 import { body } from "express-validator";
+import { getUserByGoogleID } from "../../usecases/users.js";
 import verifyToken from "../../middlewares/authMiddleware.js";
 import { checkRole } from "../../middlewares/rolesMiddleware.js";
 
@@ -40,12 +41,14 @@ router.get("/google", passport.authenticate("google"));
 
 router.get(
   "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
-  (req, res, next) => {
+  passport.authenticate("google", { failureRedirect: "/" }),
+  async (req, res, next) => {
     if (!req.user)
       return next({ statusCode: 401, message: "Authentication failed" });
 
-    const token = generateToken(req.user.id);
+    const user = await getUserByGoogleID(req.user.googleId)
+
+    const token = generateToken(user.id);
 
     const frontendURL = `${process.env.FRONTEND_URL}/auth/callback?token=${token}`;
     return res.redirect(frontendURL);

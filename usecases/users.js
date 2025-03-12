@@ -31,8 +31,8 @@ export const updateUserWithTokens = async (email, googleId, tokens) => {
     {
       $set: {
         googleId,
-        "tokens.access_token": tokens.accessToken,
-        "tokens.refresh_token": tokens.refreshToken || "",
+        "tokens.access_token": tokens.access_token,
+        "tokens.refresh_token": tokens.refresh_token || "",
         emailVerified: true,
       },
     },
@@ -51,7 +51,11 @@ export const getUserByEmail = async (email) => {
 // =======================
 // create new google user
 // =======================
-export const createGoogleUser = async (profile, accessToken, refreshToken) => {
+export const createGoogleUser = async (
+  profile,
+  access_token,
+  refresh_token
+) => {
   const user = await User.create({
     googleId: profile.id,
     name: profile.displayName,
@@ -59,7 +63,7 @@ export const createGoogleUser = async (profile, accessToken, refreshToken) => {
     firstName: profile.name.givenName,
     lastName: profile.name.familyName,
     emailVerified: true,
-    tokens: { accessToken, refreshToken },
+    tokens: { access_token, refresh_token },
   });
 
   return user ? user.toJSON() : null;
