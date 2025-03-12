@@ -38,7 +38,7 @@ router.post("/reset-password/:token", resetPassword);
 // =========GOOGLE SIGN-IN AUTH=============
 router.get(
   "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
+  passport.authenticate("google")
 );
 
 router.get(
