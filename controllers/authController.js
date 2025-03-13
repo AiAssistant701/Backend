@@ -141,7 +141,7 @@ export const logoutUser = (req, res) => {
   return responseHandler(res, null, "Logged out successfully");
 };
 
-// @route   POST /api/auth/verify-email/:token
+// @route   GET /api/auth/verify-email/:token
 // @desc    Verify a user's email
 export const verifyEmail = async (req, res, next) => {
   const { token } = req.params;
@@ -157,7 +157,7 @@ export const verifyEmail = async (req, res, next) => {
     return responseHandler(res, null, "Your account has been confirmed!", 201);
   });
 
-  /* res.redirect(FRONTEND_URL) */
+  res.redirect(process.env.FRONTEND_URL)
 };
 
 // @route   POST /api/auth/forgot-password

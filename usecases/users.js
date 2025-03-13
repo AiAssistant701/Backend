@@ -49,6 +49,14 @@ export const getUserByEmail = async (email) => {
 };
 
 // =======================
+// get user data from db by phone number
+// =======================
+export const getUserByPhoneNumber = async (phoneNumber) => {
+  const user = await User.findOne({ phoneNumber });
+  return user ? user.toJSON() : null;
+};
+
+// =======================
 // create new google user
 // =======================
 export const createGoogleUser = async (

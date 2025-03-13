@@ -1,15 +1,18 @@
 import axios from "axios";
 import dotenv from "dotenv";
 import { getModelForTask } from "../utils/modelRouter.js";
-import { extractEmailDetails } from "../utils/helpers.js";
+import {
+  extractEmailDetails,
+  generateTaskDescription,
+} from "../utils/helpers.js";
 import { classifyIntent } from "../utils/intentClassifier.js";
+import responseHandler from "../middlewares/responseHandler.js";
+import { aiOrchestrator } from "../services/aiOrchestratorService.js";
+import { extractEventDetails } from "../utils/extractEventDetails.js";
 import {
   createTaskHistory,
   updateTaskToCompleted,
 } from "../usecases/taskHistory.js";
-import responseHandler from "../middlewares/responseHandler.js";
-import { aiOrchestrator } from "../services/aiOrchestratorService.js";
-import { extractEventDetails } from "../utils/extractEventDetails.js";
 import {
   SEND_EMAIL,
   MEETING_SCHEDULING,
@@ -18,7 +21,7 @@ import {
   FILE_RETRIEVAL,
   REPORT_GENERATION,
   MARKET_RESEARCH,
-  FINANCE_ANALYSIS
+  FINANCE_ANALYSIS,
 } from "../utils/constants.js";
 
 dotenv.config();
@@ -32,24 +35,7 @@ const handleAIRequest = async (req, res, next) => {
     const taskType = await classifyIntent(prompt);
     console.log("taskType", taskType);
 
-    const geminiApiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash-001:generateContent?key=${process.env.GEMINI_API_KEY}`;
-    const geminiApiPayload = {
-      contents: [
-        {
-          parts: [
-            {
-              text: `Generate a  brief and concise description for this user's prompt. Use this format 'Asked about this question', 'Sent email to to johndoe@yahoo.com': ${prompt}`,
-            },
-          ],
-        },
-      ],
-    };
-    const headers = { "Content-Type": "application/json" };
-    const response = await axios.post(geminiApiUrl, geminiApiPayload, {
-      headers,
-    });
-
-    const description = response.data.candidates?.[0]?.content.parts[0].text;
+    const description = await generateTaskDescription(prompt);
 
     const taskHistory = await createTaskHistory(
       user.id,

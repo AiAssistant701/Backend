@@ -59,7 +59,7 @@ export const aiOrchestrator = async (taskType, payload) => {
       case MESSAGE_PROCESSING:
         modelUsed = "GPT-4 Turbo";
         reasoning = "GPT-4 is optimal for conversational context.";
-        result = await processMessage(payload);
+        result = await chatbotService(taskType, payload);
         decisionScore = 0.92;
         break;
 
