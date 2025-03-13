@@ -1,18 +1,8 @@
 import axios from "axios";
 import dotenv from "dotenv";
-import { getModelForTask } from "../utils/modelRouter.js";
 import { getUserByPhoneNumber } from "../usecases/users.js";
-import { classifyIntent } from "../utils/intentClassifier.js";
+import { processUserRequest } from "../utils/taskProcessor.js";
 import responseHandler from "../middlewares/responseHandler.js";
-import { aiOrchestrator } from "../services/aiOrchestratorService.js";
-import {
-  createTaskHistory,
-  updateTaskToCompleted,
-} from "../usecases/taskHistory.js";
-import {
-  generateTaskDescription,
-  enrichPayloadForTaskType,
-} from "../utils/helpers.js";
 
 dotenv.config();
 
@@ -72,7 +62,6 @@ export const verifyWebhook = (req, res) => {
 // =======================
 export const receiveWhatsAppMessage = async (req, res, next) => {
   try {
-    // Validate webhook structure
     if (!req.body.object || !req.body.entry) {
       return responseHandler(
         res,
@@ -93,10 +82,8 @@ export const receiveWhatsAppMessage = async (req, res, next) => {
         const sender = message.from;
         const text = message.text?.body || "";
 
-        // Log incoming message
         console.log(`Received WhatsApp message from ${sender}: ${text}`);
 
-        // Get user or send appropriate error
         const user = await getUserByPhoneNumber(sender);
         if (!user) {
           await sendWhatsAppMessage(
@@ -111,33 +98,13 @@ export const receiveWhatsAppMessage = async (req, res, next) => {
           );
         }
 
-        // Process the message
         try {
-          const taskType = await classifyIntent(text);
-          const description = await generateTaskDescription(text);
-
-          const taskHistory = await createTaskHistory(
-            user.id,
-            taskType,
-            description,
-            text
-          );
-
-          // Create base payload
-          const provider = getModelForTask(taskType);
-          let payload = {
+          const { result } = await processUserRequest({
             userId: user.id,
-            provider,
-            query: text,
-            taskHistoryId: taskHistory.id,
-          };
+            prompt: text,
+          });
 
-          payload = await enrichPayloadForTaskType(taskType, text, payload);
-
-          const aiResponse = await aiOrchestrator(taskType, payload);
-
-          await updateTaskToCompleted(taskHistory._id);
-          await sendWhatsAppMessage(sender, aiResponse.response);
+          await sendWhatsAppMessage(sender, result.response);
         } catch (processingError) {
           console.error("Error processing message:", processingError);
           await sendWhatsAppMessage(
