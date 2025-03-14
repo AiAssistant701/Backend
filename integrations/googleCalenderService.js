@@ -1,5 +1,6 @@
 import { google } from "googleapis";
 import { getUserByGoogleID } from "../usecases/users.js";
+import { MEETING_SCHEDULING } from "../utils/constants.js";
 
 // =======================
 // Create a new event in Google Calendar
@@ -43,7 +44,11 @@ export const createCalendarEvent = async (googleId, eventDetails) => {
       conferenceDataVersion: 1,
     });
 
-    return response.data;
+    return {
+      result: response.data,
+      response: "Event SET!",
+      message: MEETING_SCHEDULING,
+    };
   } catch (error) {
     throw new Error(`Google Calendar API Error: ${error}`);
   }

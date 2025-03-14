@@ -29,6 +29,8 @@ export const processUserRequest = async ({
   file,
 }) => {
   const taskType = await classifyIntent(prompt);
+  console.log("taskType", taskType)
+
   const description = await generateTaskDescription(prompt);
 
   const taskHistory = await createTaskHistory(

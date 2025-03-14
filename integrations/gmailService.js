@@ -50,7 +50,11 @@ export const sendEmail = async (googleId, to, subject, message) => {
       requestBody: { raw: encodedMessage },
     });
 
-    return response.data;
+    return {
+      result: response.data,
+      response: "Email SENT!",
+      message: SEND_EMAIL,
+    };
   } catch (error) {
     throw new Error(`Gmail API Error: ${error.message}`);
   }
