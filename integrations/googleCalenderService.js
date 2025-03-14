@@ -79,7 +79,7 @@ export const getUpcomingEvents = async (googleId) => {
       orderBy: "startTime",
     });
 
-    return response.data.items;
+    return { response: response.data.items };
   } catch (error) {
     throw new Error(`Google Calendar API Error: ${error}`);
   }

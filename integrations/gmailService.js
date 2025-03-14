@@ -143,7 +143,7 @@ const fetchEmailDetails = async (gmail, messages) => {
       emailDetails.push({ from, subject, snippet });
     }
 
-    return emailDetails;
+    return { response: emailDetails };
   } catch (error) {
     throw new Error(`Gmail API Error: ${error.message}`);
   }
@@ -177,7 +177,7 @@ export const summarizeUnreadEmails = async (googleId) => {
       })
     );
 
-    return summarizedEmails;
+    return { response: summarizedEmails };
   } catch (error) {
     throw new Error(`Gmail API Error: ${error.message}`);
   }
@@ -216,7 +216,7 @@ export const sendAutoReply = async (googleId, email, message) => {
       },
     });
 
-    return { message: "Auto-reply sent", to: email.sender };
+    return { response: "Auto-reply sent", to: email.sender };
   } catch (error) {
     throw new Error(`Gmail API Error: ${error.message}`);
   }
