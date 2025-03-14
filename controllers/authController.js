@@ -57,11 +57,11 @@ export const registerUser = async (req, res, next) => {
           expiresIn: "1d",
         },
         (err, emailToken) => {
-          url = `http://localhost:5000/api/auth/verify-email/${emailToken}`;
+         let url = `${process.env.FRONTEND_URL}/verify/${emailToken}`;
           const mailOptions = {
-            from: "danielidowu414@gmail.com",
-            to: "jorovod391@nastyx.com", // change to dynamic email (email)
-            subject: "Welcome to AI-Auto!",
+            from: "<support@ai-auto>",
+            to: user.email,
+            subject: "Heyy! Welcome to AI-Auto!",
             html: `Welcome <b>${firstName}</b>,
               Kindly confirm your email <a href=${url} target='_blank'>here</a>
               `,
@@ -69,7 +69,10 @@ export const registerUser = async (req, res, next) => {
 
           transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
+              console.log("Email Error: ", error);
               return next({ statusCode: 400, message: error });
+            } else {
+              console.log("Email sent: " + info.response);
             }
           });
         }
@@ -153,11 +156,9 @@ export const verifyEmail = async (req, res, next) => {
     await User.findByIdAndUpdate(user.id, {
       $set: { emailVerified: true },
     });
-
-    return responseHandler(res, null, "Your account has been confirmed!", 201);
   });
 
-  res.redirect(process.env.FRONTEND_URL)
+  res.redirect(process.env.FRONTEND_URL);
 };
 
 // @route   POST /api/auth/forgot-password
