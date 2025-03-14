@@ -1,6 +1,5 @@
-import User from "../models/User.js";
 import { google } from "googleapis";
-import { OPENAI, SEND_EMAIL } from "../utils/constants.js";
+import { OPENAI, SEND_EMAIL, GEMINI } from "../utils/constants.js";
 import { extractEmail } from "../utils/helpers.js";
 import { getUserByGoogleID } from "../usecases/users.js";
 import { chatbotService } from "../services/chatbotService.js";
@@ -14,11 +13,16 @@ export const sendEmail = async (googleId, to, subject, message) => {
     if (!user) throw new Error("No Gmail authentication found for user.");
 
     if (message.toLowerCase().startsWith("about")) {
-      let template = `Generate a professional email ${message}. Do NOT use placeholders like [Your Name]. If a value is unknown, omit it instead.`;
+      let template = 
+      `Generate a professional email ${message}. Do NOT use placeholders like [Your Name] or [Recipient Name]. If a value is unknown, omit it instead. 
+      Use ${user.name} as the sender's name and break the email ${to} into reasonable first name or last name or both and use the most reasonable one as the recipient name. 
+      Do NOT include any additional information not included in the message. 
+      Do NOT include a subject`;
+
       let payload = {
         userId: user.id,
         query: template,
-        provider: OPENAI,
+        provider: GEMINI,
       };
       let response = await chatbotService(SEND_EMAIL, payload);
       message = response.response;
