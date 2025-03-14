@@ -57,14 +57,34 @@ export const registerUser = async (req, res, next) => {
           expiresIn: "1d",
         },
         (err, emailToken) => {
-         let url = `${process.env.FRONTEND_URL}/verify/${emailToken}`;
+          let url = `${process.env.FRONTEND_URL}/verify/${emailToken}`;
           const mailOptions = {
-            from: "<support@ai-auto>",
+            from: "AI-Auto Support <support@ai-auto>",
             to: user.email,
-            subject: "Heyy! Welcome to AI-Auto!",
-            html: `Welcome <b>${firstName}</b>,
-              Kindly confirm your email <a href=${url} target='_blank'>here</a>
-              `,
+            subject: "Verify Your Email - Welcome to AI-Auto!",
+            html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+              <h2 style="color: #4CAF50; text-align: center;">Welcome to AI-Auto, ${firstName}! 🎉</h2>
+              <p style="font-size: 16px; color: #333;">
+                We're excited to have you on board! Before you get started, please confirm your email address by clicking the button below:
+              </p>
+              <div style="text-align: center; margin: 20px 0;">
+                <a href="${url}" target="_blank" 
+                   style="background-color: #4CAF50; color: white; padding: 12px 24px; font-size: 16px; text-decoration: none; border-radius: 5px;">
+                  Verify Email
+                </a>
+              </div>
+              <p style="font-size: 14px; color: #666;">
+                If the button above doesn’t work, copy and paste this link into your browser: 
+                <br>
+                <a href="${url}" target="_blank" style="color: #4CAF50;">${url}</a>
+              </p>
+              <hr>
+              <p style="font-size: 12px; color: #999; text-align: center;">
+                Need help? Contact us at <a href="mailto:support@ai-auto" style="color: #4CAF50;">support@ai-auto</a>
+              </p>
+            </div>
+          `,
           };
 
           transporter.sendMail(mailOptions, (error, info) => {
