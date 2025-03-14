@@ -63,7 +63,7 @@ export const getApiKeys = async (req, res, next) => {
 
 // @route   PUT /api/v1/users/apikeys
 // @desc    Updates a user's api keys
-export const updateApiKeys = async (req, res) => {
+export const updateApiKeys = async (req, res, next) => {
   try {
     const { userId, provider, newKey } = req.body;
     const encryptedKey = crypto.encrypt(newKey);
