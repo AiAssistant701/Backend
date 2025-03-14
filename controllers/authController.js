@@ -140,10 +140,12 @@ export const loginUser = async (req, res, next) => {
       }
       user = user.toJSON();
 
+      const hasApiKey = user.apiKeys && user.apiKeys.length > 0;
+
       const token = generateToken(user.id);
       return responseHandler(
         res,
-        { id: user.id, name: user.name, email: user.email, token },
+        { id: user.id, name: user.name, email: user.email, token, hasApiKey },
         "User logged in"
       );
     } else {
