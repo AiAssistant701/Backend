@@ -68,9 +68,15 @@ const userSchema = new mongoose.Schema(
         delete ret.password;
         delete ret.__v;
       },
+      virtuals: true
     },
   }
 );
+
+// Virtual field to check if the user has a password
+userSchema.virtual("hasPassword").get(function () {
+  return !!this.password;
+});
 
 // Hash password before saving user
 userSchema.pre("save", async function (next) {

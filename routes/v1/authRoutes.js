@@ -14,6 +14,7 @@ import { body } from "express-validator";
 import { getUserByGoogleID } from "../../usecases/users.js";
 import verifyToken from "../../middlewares/authMiddleware.js";
 import { checkRole } from "../../middlewares/rolesMiddleware.js";
+import responseHandler from "../../middlewares/responseHandler.js";
 
 const router = express.Router();
 
@@ -37,7 +38,15 @@ router.post("/forgot-password", requestPasswordReset);
 router.post("/reset-password/:token", resetPassword);
 
 // =========GOOGLE SIGN-IN AUTH=============
-router.get("/google", passport.authenticate("google"));
+router.get("/google", (req, res, next) => {
+  const intent = req.query.intent
+
+  req.session.authIntent = intent;
+
+  passport.authenticate("google", {
+    state: intent,
+  })(req, res, next);
+});
 
 router.get(
   "/google/callback",
@@ -46,12 +55,16 @@ router.get(
     if (!req.user)
       return next({ statusCode: 401, message: "Authentication failed" });
 
-    const user = await getUserByGoogleID(req.user.googleId)
+    const intent = req.query.state || "auth";
 
-    const token = generateToken(user.id);
-
-    const frontendURL = `${process.env.FRONTEND_URL}/auth/callback?token=${token}`;
-    return res.redirect(frontendURL);
+    if (intent === "connect") {
+      return responseHandler(res, null, "Google account connected successfully");
+    } else {
+      const user = await getUserByGoogleID(req.user.googleId);
+      const token = generateToken(user.id);
+      const frontendURL = `${process.env.FRONTEND_URL}/auth/callback?token=${token}`;
+      return res.redirect(frontendURL);
+    }
   }
 );
 
