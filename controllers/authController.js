@@ -54,7 +54,7 @@ export const registerUser = async (req, res, next) => {
         },
         process.env.EMAIL_JWT_SECRET,
         {
-          expiresIn: "1d",
+          expiresIn: "1h",
         },
         (err, emailToken) => {
           let url = `${process.env.FRONTEND_URL}/verify/${emailToken}`;
@@ -87,12 +87,17 @@ export const registerUser = async (req, res, next) => {
           `,
           };
 
-          transporter.sendMail(mailOptions, (error, info) => {
+          transporter.sendMail(mailOptions, async (error, info) => {
             if (error) {
               console.log("Email Error: ", error);
               return next({ statusCode: 400, message: error });
             } else {
               console.log("Email sent: " + info.response);
+              await User.findOneAndUpdate(
+                  { email },
+                  { $set: { lastVerificationEmailSent: new Date() } },
+                  { new: true }
+                );
             }
           });
         }
@@ -133,6 +138,69 @@ export const loginUser = async (req, res, next) => {
 
     if (user && (await user.matchPassword(password))) {
       if (!user.emailVerified) {
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+
+        if (
+          user.lastVerificationEmailSent &&
+          user.lastVerificationEmailSent > oneHourAgo
+        ) {
+          return next({
+            statusCode: 401,
+            message:
+              "Verification link was already sent recently. Please check your email or wait before requesting another.",
+          });
+        }
+
+        jwt.sign(
+          {
+            id: user.id,
+          },
+          process.env.EMAIL_JWT_SECRET,
+          {
+            expiresIn: "1h",
+          },
+          (err, emailToken) => {
+            let url = `${process.env.FRONTEND_URL}/verify/${emailToken}`;
+            const mailOptions = {
+              from: "AI-Auto Support <support@ai-auto>",
+              to: user.email,
+              subject: "Verify Your Email - Welcome to AI-Auto!",
+              html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+                <h2 style="color: #4CAF50; text-align: center;">Hello, ${user.firstName}!👋🏼</h2>
+                <p style="font-size: 16px; color: #333;">
+                  Before you get started, please confirm your email address by clicking the button below:
+                </p>
+                <div style="text-align: center; margin: 20px 0;">
+                  <a href="${url}" target="_blank" 
+                     style="background-color: #4CAF50; color: white; padding: 12px 24px; font-size: 16px; text-decoration: none; border-radius: 5px;">
+                    Verify Email
+                  </a>
+                </div>
+                <p style="font-size: 14px; color: #666;">
+                  If the button above doesn’t work, copy and paste this link into your browser: 
+                  <br>
+                  <a href="${url}" target="_blank" style="color: #4CAF50;">${url}</a>
+                </p>
+                <hr>
+                <p style="font-size: 12px; color: #999; text-align: center;">
+                  Need help? Contact us at <a href="mailto:support@ai-auto" style="color: #4CAF50;">support@ai-auto</a>
+                </p>
+              </div>
+            `,
+            };
+
+            transporter.sendMail(mailOptions, (error, info) => {
+              if (error) {
+                console.log("Email Error: ", error);
+                return next({ statusCode: 400, message: error });
+              } else {
+                console.log("Email sent: " + info.response);
+              }
+            });
+          }
+        );
+
         return next({
           statusCode: 401,
           message: "Please confirm your email to login!",

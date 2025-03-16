@@ -58,6 +58,10 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    lastVerificationEmailSent: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -68,7 +72,7 @@ const userSchema = new mongoose.Schema(
         delete ret.password;
         delete ret.__v;
       },
-      virtuals: true
+      virtuals: true,
     },
   }
 );
