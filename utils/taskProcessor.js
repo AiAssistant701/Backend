@@ -16,6 +16,7 @@ import {
   FILE_RETRIEVAL,
   REPORT_GENERATION,
   MARKET_RESEARCH,
+  HEALTH_REMINDERS,
 } from "./constants.js";
 
 // =======================
@@ -29,7 +30,7 @@ export const processUserRequest = async ({
   file,
 }) => {
   const taskType = await classifyIntent(prompt);
-  console.log("taskType", taskType)
+  console.log("taskType", taskType);
 
   const description = await generateTaskDescription(prompt);
 
@@ -96,6 +97,7 @@ const buildPayloadForTask = async ({
     case QUICK_ANSWERS:
     case FILE_RETRIEVAL:
     case MARKET_RESEARCH:
+    case HEALTH_REMINDERS:
       return { ...payload, query: prompt };
 
     case REPORT_GENERATION:

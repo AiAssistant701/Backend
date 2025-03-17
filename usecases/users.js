@@ -1,5 +1,4 @@
 import User from "../models/User.js";
-import { encrypt, decrypt } from "../utils/crypto.js";
 
 // =======================
 // save user google tokens
@@ -45,6 +44,14 @@ export const updateUserWithTokens = async (email, googleId, tokens) => {
 // =======================
 export const getUserByEmail = async (email) => {
   const user = await User.findOne({ email });
+  return user ? user.toJSON() : null;
+};
+
+// =======================
+// get user data from db by id
+// =======================
+export const getUserById = async (id) => {
+  const user = await User.findById(id);
   return user ? user.toJSON() : null;
 };
 

@@ -2,6 +2,7 @@ import { chatbotService } from "./chatbotService.js";
 import { analyzeFinance } from "./financeService.js";
 import { processMessage } from "./messagingService.js";
 import { performMarketResearch } from "./research/marketResearch.js";
+import { handleHealthReminder } from "../utils/cron-jobs/healthReminders.js";
 import {
   createCalendarEvent,
   getUpcomingEvents,
@@ -176,7 +177,7 @@ export const aiOrchestrator = async (taskType, payload) => {
       case HEALTH_REMINDERS:
         modelUsed = "Health API + AI NLP";
         reasoning = "Health API for fitness tracking & AI reminders.";
-        result = await provideHealthReminders(payload);
+        result = await handleHealthReminder(payload.query, payload.userId);
         decisionScore = 0.97;
         break;
 

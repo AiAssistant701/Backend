@@ -419,7 +419,7 @@ export const classifyIntent = async (text) => {
 //       expected: "progress_tracking",
 //     },
 //     {
-//       prompt: "Remind me to drink water every hour.",
+//       prompt: "Remind me to drink water every hour.", "Remind me to drink water at 3:00 PM
 //       expected: "health_reminders",
 //     },
 //   ];

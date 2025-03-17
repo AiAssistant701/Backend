@@ -1,16 +1,5 @@
 import axios from "axios";
 import dotenv from "dotenv";
-import {
-  SEND_EMAIL,
-  MEETING_SCHEDULING,
-  QUICK_ANSWERS,
-  UPLOAD_FILE,
-  FILE_RETRIEVAL,
-  REPORT_GENERATION,
-  MARKET_RESEARCH,
-  FINANCE_ANALYSIS,
-} from "./constants.js";
-import { extractEventDetails } from "./extractEventDetails.js";
 
 dotenv.config();
 
@@ -69,41 +58,22 @@ export const generateTaskDescription = async (prompt) => {
 };
 
 // =======================
-// to modularize payload
+// to extract time for health reminders
 // =======================
-export const enrichPayloadForTaskType = async (taskType, text, basePayload) => {
-  switch (taskType) {
-    case SEND_EMAIL:
-      const emailDetails = extractEmailDetails(text);
-      if (!emailDetails) {
-        throw new Error("Could not extract email details");
-      }
-      return { ...basePayload, ...emailDetails };
+export const extractTime = (message) => {
+  const timePattern = /\b(\d{1,2}(:\d{2})?\s?(AM|PM)?)\b/i;
+  const match = message.match(timePattern);
+  return match ? match[0] : null;
+};
 
-    case MEETING_SCHEDULING:
-      const eventDetails = await extractEventDetails(text);
-      if (!eventDetails) {
-        throw new Error("Could not extract event details");
-      }
-      return { ...basePayload, eventDetails };
-
-    case QUICK_ANSWERS:
-    case FILE_RETRIEVAL:
-    case MARKET_RESEARCH:
-      return basePayload;
-
-    case REPORT_GENERATION:
-      return {
-        ...basePayload,
-        query: `Generate a report for ${text}`,
-      };
-
-    // File-based tasks should be handled differently for WhatsApp
-    case UPLOAD_FILE:
-    case FINANCE_ANALYSIS:
-      throw new Error("File uploads not supported via WhatsApp messages");
-
-    default:
-      return basePayload;
-  }
+// =======================
+// to extract reminder text for health reminders
+// =======================
+export const extractReminderText = (message) => {
+  return message
+    .replace(
+      /remind me to|set a reminder for|at \d{1,2}(:\d{2})?\s?(AM|PM)?/gi,
+      ""
+    )
+    .trim();
 };
