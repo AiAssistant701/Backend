@@ -10,6 +10,8 @@ export const handleHealthReminder = async (userMessage, userId) => {
   const reminderTime = extractTime(userMessage);
   const reminderText = extractReminderText(userMessage);
 
+  if (!user.phoneNumber) return "Phone Number is required for user!";
+
   if (!reminderTime) return "Please specify a time for your reminder.";
 
   const reminderDate = moment(reminderTime, ["h:mm A"]).toDate();

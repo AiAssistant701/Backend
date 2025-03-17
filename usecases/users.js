@@ -17,6 +17,7 @@ export const saveUserTokens = async (googleId, tokens) => {
 // get user by googleId
 // =======================
 export const getUserByGoogleID = async (googleId) => {
+  if (!googleId) return null;
   const user = await User.findOne({ googleId });
   return user ? user.toJSON() : null;
 };
