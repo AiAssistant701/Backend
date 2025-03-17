@@ -8,7 +8,7 @@ import { MEETING_SCHEDULING } from "../utils/constants.js";
 export const createCalendarEvent = async (googleId, eventDetails) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user) throw new Error("No Google authentication found for user.");
+    if (!user || !user.tokens) throw new Error("No Google authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
@@ -60,7 +60,7 @@ export const createCalendarEvent = async (googleId, eventDetails) => {
 export const getUpcomingEvents = async (googleId) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user) throw new Error("No Google authentication found for user.");
+    if (!user || !user.tokens) throw new Error("No Google authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,

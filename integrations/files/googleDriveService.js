@@ -9,7 +9,7 @@ import { classifyFile } from "../../utils/fileClassifier.js";
 export const uploadFileToGoogleDrive = async (googleId, filePath, fileName) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user) throw new Error("No Google authentication found for user.");
+    if (!user || !user.tokens) throw new Error("No Google authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
@@ -52,7 +52,7 @@ export const uploadFileToGoogleDrive = async (googleId, filePath, fileName) => {
 export const getGoogleDriveFiles = async (googleId, query = "") => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user) throw new Error("No Google authentication found for user.");
+    if (!user || !user.tokens) throw new Error("No Google authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
@@ -83,7 +83,7 @@ export const getGoogleDriveFiles = async (googleId, query = "") => {
 export const getOrCreateFolder = async (googleId, folderName) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user) throw new Error("No Google authentication found for user.");
+    if (!user || !user.tokens) throw new Error("No Google authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
@@ -126,7 +126,7 @@ export const getOrCreateFolder = async (googleId, folderName) => {
 export const organizeFilesInDrive = async (googleId) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user) throw new Error("No Google authentication found for user.");
+    if (!user || !user.tokens) throw new Error("No Google authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,

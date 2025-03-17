@@ -94,10 +94,10 @@ export const registerUser = async (req, res, next) => {
             } else {
               console.log("Email sent: " + info.response);
               await User.findOneAndUpdate(
-                  { email },
-                  { $set: { lastVerificationEmailSent: new Date() } },
-                  { new: true }
-                );
+                { email },
+                { $set: { lastVerificationEmailSent: new Date() } },
+                { new: true }
+              );
             }
           });
         }
@@ -238,17 +238,21 @@ export const logoutUser = (req, res) => {
 // @desc    Verify a user's email
 export const verifyEmail = async (req, res, next) => {
   const { token } = req.params;
-  jwt.verify(token, process.env.EMAIL_JWT_SECRET, async (err, user) => {
-    if (err) {
-      return next({ statusCode: 400, message: "Invalid email token!" });
-    }
+  try {
+    jwt.verify(token, process.env.EMAIL_JWT_SECRET, async (err, user) => {
+      if (err) {
+        return next({ statusCode: 400, message: "Invalid email token!" });
+      }
 
-    await User.findByIdAndUpdate(user.id, {
-      $set: { emailVerified: true },
+      await User.findByIdAndUpdate(user.id, {
+        $set: { emailVerified: true },
+      });
     });
-  });
 
-  res.redirect(process.env.FRONTEND_URL);
+    res.redirect(process.env.FRONTEND_URL);
+  } catch (error) {
+    next(error);
+  }
 };
 
 // @route   POST /api/auth/forgot-password

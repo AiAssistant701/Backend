@@ -10,7 +10,7 @@ import { chatbotService } from "../services/chatbotService.js";
 export const sendEmail = async (googleId, to, subject, message) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user) throw new Error("No Gmail authentication found for user.");
+    if (!user || !user.tokens) throw new Error("No Gmail authentication found for user.");
 
     if (message.toLowerCase().startsWith("about")) {
       let template = 
@@ -70,7 +70,7 @@ export const sendEmail = async (googleId, to, subject, message) => {
 export const getUnreadEmails = async (googleId) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user) throw new Error("No Gmail authentication found for user.");
+    if (!user || !user.tokens) throw new Error("No Gmail authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
@@ -100,7 +100,7 @@ export const getUnreadEmails = async (googleId) => {
 export const searchEmails = async (googleId, query) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user) throw new Error("No Gmail authentication found for user.");
+    if (!user || !user.tokens) throw new Error("No Gmail authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
@@ -159,7 +159,7 @@ const fetchEmailDetails = async (gmail, messages) => {
 export const summarizeUnreadEmails = async (googleId) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user) throw new Error("No Gmail authentication found for user.");
+    if (!user || !user.tokens) throw new Error("No Gmail authentication found for user.");
 
     const emails = await getUnreadEmails(googleId);
 
@@ -193,7 +193,7 @@ export const summarizeUnreadEmails = async (googleId) => {
 export const sendAutoReply = async (googleId, email, message) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user) throw new Error("No Google authentication found for user.");
+    if (!user || !user.tokens) throw new Error("No Google authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2();
     oauth2Client.setCredentials(user.tokens);
