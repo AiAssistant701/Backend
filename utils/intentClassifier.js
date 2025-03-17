@@ -114,7 +114,7 @@ export const classifyIntent = async (text) => {
 
     // Calendar and meeting operations
     meeting_scheduling: [
-      /(schedule|set up|arrange|book|plan|organize) (a |an |)(meeting|call|appointment|session)/,
+      /(schedule|set up|arrange|book|plan|organize|create) (a |an |)(meeting|call|appointment|session|google meet)/,
       /(add|put|create) (a |an |)(event|meeting|appointment) (on|in|to) (my |the |)calendar/,
       /(book|schedule|reserve) (a |an |)(time|slot|session) (with|for)/,
     ],
