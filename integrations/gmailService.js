@@ -193,7 +193,7 @@ export const summarizeUnreadEmails = async (googleId) => {
 export const sendAutoReply = async (googleId, email, message) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user || !user.tokens) throw new Error("No Google authentication found for user.");
+    if (!user || !user.tokens) throw new Error("No Gmail authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2();
     oauth2Client.setCredentials(user.tokens);

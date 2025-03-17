@@ -59,12 +59,12 @@ export const registerUser = async (req, res, next) => {
         (err, emailToken) => {
           let url = `${process.env.FRONTEND_URL}/verify/${emailToken}`;
           const mailOptions = {
-            from: "AI-Auto Support <support@ai-auto>",
+            from: "YAAS Support <support@yaas>",
             to: user.email,
-            subject: "Verify Your Email - Welcome to AI-Auto!",
+            subject: "Verify Your Email - Welcome to YAAS!",
             html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-              <h2 style="color: #4CAF50; text-align: center;">Welcome to AI-Auto, ${firstName}! 🎉</h2>
+              <h2 style="color: #4CAF50; text-align: center;">Welcome to YAAS, ${firstName}! 🎉</h2>
               <p style="font-size: 16px; color: #333;">
                 We're excited to have you on board! Before you get started, please confirm your email address by clicking the button below:
               </p>
@@ -81,7 +81,7 @@ export const registerUser = async (req, res, next) => {
               </p>
               <hr>
               <p style="font-size: 12px; color: #999; text-align: center;">
-                Need help? Contact us at <a href="mailto:support@ai-auto" style="color: #4CAF50;">support@ai-auto</a>
+                Need help? Contact us at <a href="mailto:support@yaas" style="color: #4CAF50;">support@yaas</a>
               </p>
             </div>
           `,
@@ -162,9 +162,9 @@ export const loginUser = async (req, res, next) => {
           (err, emailToken) => {
             let url = `${process.env.FRONTEND_URL}/verify/${emailToken}`;
             const mailOptions = {
-              from: "AI-Auto Support <support@ai-auto>",
+              from: "YAAS Support <support@yaas>",
               to: user.email,
-              subject: "Verify Your Email - Welcome to AI-Auto!",
+              subject: "Verify Your Email - Welcome to YAAS!",
               html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
                 <h2 style="color: #4CAF50; text-align: center;">Hello, ${user.firstName}!👋🏼</h2>
@@ -184,7 +184,7 @@ export const loginUser = async (req, res, next) => {
                 </p>
                 <hr>
                 <p style="font-size: 12px; color: #999; text-align: center;">
-                  Need help? Contact us at <a href="mailto:support@ai-auto" style="color: #4CAF50;">support@ai-auto</a>
+                  Need help? Contact us at <a href="mailto:support@yaas" style="color: #4CAF50;">support@yaas</a>
                 </p>
               </div>
             `,
