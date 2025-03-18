@@ -97,13 +97,40 @@ export const deleteApiKeys = async (req, res, next) => {
 // @desc    Gets a user's task history
 export const fetchUserTaskHistory = async (req, res, next) => {
   try {
-    const userId = req.params.userId
+    const userId = req.params.userId;
     const user = await User.findById(userId);
     if (!user) return next({ statusCode: 400, message: "User not found" });
 
-   const tasks = await getUserTaskHistory(userId)
-  
+    const tasks = await getUserTaskHistory(userId);
+
     responseHandler(res, tasks, "User task history retrieved!");
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @route   PUT /api/v1/users/:userId
+// @desc    Updates a user's profile
+export const updateUser = async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+    const data = req.body;
+
+    const user = await User.findByIdAndUpdate(userId, data, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!user) return next({ statusCode: 400, message: "User not found" });
+
+    if (userId !== req.user.id.toString()) {
+      return next({
+        statusCode: 403,
+        message: "You are not authorized to update this user's profile",
+      });
+    }
+
+    responseHandler(res, user, "User profile updated!");
   } catch (error) {
     next(error);
   }

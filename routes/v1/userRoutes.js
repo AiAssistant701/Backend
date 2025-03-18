@@ -3,6 +3,7 @@ import { body } from "express-validator";
 import verifyToken from "../../middlewares/authMiddleware.js";
 import { checkRole } from "../../middlewares/rolesMiddleware.js";
 import {
+  updateUser,
   fetchUserProfile,
   storeApiKeys,
   getApiKeys,
@@ -14,6 +15,7 @@ import {
 const router = express.Router();
 
 router.get("/profile/:userId", verifyToken, fetchUserProfile);
+router.put("/:userId", verifyToken, updateUser);
 router.post("/apikeys", verifyToken, storeApiKeys);
 router.get("/apikeys/:userId", verifyToken, getApiKeys);
 router.put("/apikeys", verifyToken, updateApiKeys);
