@@ -101,6 +101,13 @@ export const fetchUserTaskHistory = async (req, res, next) => {
     const user = await User.findById(userId);
     if (!user) return next({ statusCode: 400, message: "User not found" });
 
+    if (userId !== req.user.id.toString()) {
+      return next({
+        statusCode: 403,
+        message: "You are not authorized to update this user's profile",
+      });
+    }
+
     const tasks = await getUserTaskHistory(userId);
 
     responseHandler(res, tasks, "User task history retrieved!");
@@ -136,8 +143,6 @@ export const updateUser = async (req, res, next) => {
     );
 
     if (!user) return next({ statusCode: 400, message: "User not found" });
-
-
 
     responseHandler(
       res,
