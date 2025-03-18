@@ -137,7 +137,18 @@ export const updateUser = async (req, res, next) => {
 
     if (!user) return next({ statusCode: 400, message: "User not found" });
 
-    responseHandler(res, user, "User profile updated!");
+
+
+    responseHandler(
+      res,
+      {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+      },
+      "User profile updated!"
+    );
   } catch (error) {
     next(error);
   }
