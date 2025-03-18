@@ -116,19 +116,26 @@ export const updateUser = async (req, res, next) => {
     const userId = req.params.userId;
     const data = req.body;
 
-    const user = await User.findByIdAndUpdate(userId, data, {
-      new: true,
-      runValidators: true,
-    });
-
-    if (!user) return next({ statusCode: 400, message: "User not found" });
-
     if (userId !== req.user.id.toString()) {
       return next({
         statusCode: 403,
         message: "You are not authorized to update this user's profile",
       });
     }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        ...data,
+        updatedAt: new Date(),
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!user) return next({ statusCode: 400, message: "User not found" });
 
     responseHandler(res, user, "User profile updated!");
   } catch (error) {
