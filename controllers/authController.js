@@ -239,19 +239,17 @@ export const logoutUser = (req, res) => {
 export const verifyEmail = async (req, res, next) => {
   const { token } = req.params;
   try {
-    jwt.verify(token, process.env.EMAIL_JWT_SECRET, async (err, user) => {
-      if (err) {
-        return next({ statusCode: 400, message: "Invalid email token!" });
-      }
+    const decoded = jwt.verify(token, process.env.EMAIL_JWT_SECRET);
 
-      await User.findByIdAndUpdate(user.id, {
-        $set: { emailVerified: true },
-      });
-    });
+    if (!decoded.id) {
+      return next({ statusCode: 400, message: "Invalid email token!" });
+    }
 
-    res.redirect(process.env.FRONTEND_URL);
+    await User.findByIdAndUpdate(decoded.id, { $set: { emailVerified: true } });
+
+    return res.redirect(process.env.FRONTEND_URL);
   } catch (error) {
-    next(error);
+    next({ statusCode: 400, message: "Invalid or expired token!" });
   }
 };
 
