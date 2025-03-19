@@ -34,47 +34,37 @@ export const handleGoogleAuth = async (
   try {
     const email = profile.emails[0]?.value;
     if (!email) {
-      return done(new Error("No email provided from Google"), false);
+      return done(null, false, { message: "No email provided from Google" });
     }
 
     const tokens = { access_token, refresh_token };
-
-    const intent = req && req.query && req.query.state;
-
+    const intent = req?.query?.state;
     let user = await getUserByEmail(email);
+
     if (intent === "connect") {
-      if(user.googleId) {
-        return done(new Error("User is already linked to google"), false);
+      if (user?.googleId) {
+        return done(null, false, { message: "User is already linked to Google" });
       }
       await updateUserWithTokens(email, profile.id, tokens);
-
-      return done(null, {
-        googleId: profile.id,
-        email,
-        tokens,
-      });
+      return done(null, { googleId: profile.id, email, tokens });
     } else {
       if (!user) {
         user = await createGoogleUser(profile, access_token, refresh_token);
         if (!user) {
-          return done(new Error("Failed to create user"), false);
+          return done(null, false, { message: "Failed to create user" });
         }
       } else {
         if (user.hasPassword) {
-          return done(new Error("User is not a google user"), false);
+          return done(null, false, { message: "User is not a Google user" });
         }
-        
         await saveUserTokens(user.googleId, tokens);
-        user = {
-          googleId: user.googleId,
-          email: user.email,
-          tokens,
-        };
+        user = { googleId: user.googleId, email: user.email, tokens };
       }
       return done(null, user);
     }
   } catch (error) {
-    console.log("Google error", error);
-    return done(error, false);
+    console.error("Google Auth Error:", error);
+    return done(null, false, { message: "Internal server error" });
   }
 };
+

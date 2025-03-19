@@ -99,16 +99,16 @@ router.get(
   passport.authenticate("google", { failureRedirect: "/" }),
   async (req, res, next) => {
     if (!req.user)
-      return next({ statusCode: 401, message: "Authentication failed" });
+      return next({
+        statusCode: 401,
+        message: req.authInfo?.message || "Authentication failed",
+      });
 
     const intent = req.query.state || "auth";
 
     if (intent === "connect") {
-      return responseHandler(
-        res,
-        null,
-        "Google account connected successfully"
-      );
+      const frontendURL = `${process.env.FRONTEND_URL}/user/profile/google-confirmation`;
+      return res.redirect(frontendURL);
     } else {
       const user = await getUserByGoogleID(req.user.googleId);
       const token = generateToken(user.id);
