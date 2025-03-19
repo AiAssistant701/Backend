@@ -247,7 +247,7 @@ export const verifyEmail = async (req, res, next) => {
 
     await User.findByIdAndUpdate(decoded.id, { $set: { emailVerified: true } });
 
-    return res.redirect(process.env.FRONTEND_URL);
+    return responseHandler(res, null, "User successfully verified!");
   } catch (error) {
     next({ statusCode: 400, message: "Invalid or expired token!" });
   }
