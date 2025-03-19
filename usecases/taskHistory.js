@@ -18,11 +18,11 @@ export const createTaskHistory = async (
 };
 
 export const getUserTaskHistory = async (userId) => {
-  const tasks = await TaskHistory.find({ userId }).sort({
+  const tasks = await TaskHistory.find({ userId, status: "completed" }).sort({
     timestamp: -1,
   });
 
-  return tasks ? tasks : null;
+  return tasks.length ? tasks : null;
 };
 
 export const updateTaskToCompleted = async (id) => {

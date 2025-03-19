@@ -29,7 +29,7 @@ export const storeApiKeys = async (req, res, next) => {
     const { userId, apiKeys } = req.body; // apiKeys = [{ provider, key }]
 
     const encryptedKeys = apiKeys.map(({ provider, key }) => ({
-      provider,
+      provider: provider.toLowerCase(),
       key: encrypt(key),
     }));
 
