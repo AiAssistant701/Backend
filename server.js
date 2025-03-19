@@ -30,7 +30,11 @@ connectDB();
 // Trust Proxy (for rate limiting behind proxies)
 app.set("trust proxy", 1);
 
-const allowedOrigins = ["http://localhost:3000", "http://127.0.0.1:3000", process.env.FRONTEND_URL];
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  process.env.FRONTEND_URL,
+];
 
 // ======================
 // Middleware Setup
@@ -42,13 +46,7 @@ app.use(compression());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
@@ -58,6 +56,9 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", "true");
   next();
 });
+
+// Handle Preflight Requests for CORS
+app.options("*", cors());
 
 // Rate Limiting
 const limiter = rateLimit({
