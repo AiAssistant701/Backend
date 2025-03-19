@@ -1,6 +1,7 @@
 import express from "express";
 import passport from "passport";
 import User from "../../models/User.js";
+import { body } from "express-validator";
 import {
   registerUser,
   loginUser,
@@ -10,28 +11,73 @@ import {
   verifyEmail,
   generateToken,
 } from "../../controllers/authController.js";
-import { body } from "express-validator";
+import { passwordRegex } from "../../utils/constants.js";
 import { getUserByGoogleID } from "../../usecases/users.js";
 import verifyToken from "../../middlewares/authMiddleware.js";
 import { checkRole } from "../../middlewares/rolesMiddleware.js";
 import responseHandler from "../../middlewares/responseHandler.js";
+import { sanitizeInput } from "../../middlewares/sanitizeInput.js";
 
 const router = express.Router();
 
 router.post(
   "/signup",
   [
-    body("firstName").notEmpty().withMessage("First Name is required"),
-    body("lastName").notEmpty().withMessage("Last name is required"),
-    body("email").isEmail().withMessage("Enter a valid email"),
+    body("firstName")
+      .trim()
+      .notEmpty()
+      .withMessage("First Name is required")
+      .isAlpha()
+      .withMessage("First Name should only contain letters")
+      .escape(),
+
+    body("lastName")
+      .trim()
+      .notEmpty()
+      .withMessage("Last Name is required")
+      .isAlpha()
+      .withMessage("Last Name should only contain letters")
+      .escape(),
+
+    body("email")
+      .trim()
+      .isEmail()
+      .withMessage("Enter a valid email")
+      .normalizeEmail(),
+
     body("password")
-      .isLength({ min: 6 })
-      .withMessage("Password must be at least 6 characters"),
+      .trim()
+      .matches(passwordRegex)
+      .withMessage(
+        "Password must be at least 8 characters, include an uppercase letter, a lowercase letter, a number, and a special character (@$!%*?&)"
+      )
+      .escape(),
   ],
+  sanitizeInput,
   registerUser
 );
 
-router.post("/login", loginUser);
+router.post(
+  "/login",
+  [
+    body("identity")
+      .trim()
+      .notEmpty()
+      .withMessage("Identity (email or phone number) is required")
+      .escape(),
+
+    body("password")
+      .trim()
+      .matches(passwordRegex)
+      .withMessage(
+        "Password must be at least 8 characters, include an uppercase letter, a lowercase letter, a number, and a special character (@$!%*?&)"
+      )
+      .escape(),
+  ],
+  sanitizeInput,
+  loginUser
+);
+
 router.post("/logout", logoutUser);
 router.get("/verify-email/:token", verifyEmail);
 router.post("/forgot-password", requestPasswordReset);
@@ -39,7 +85,7 @@ router.post("/reset-password/:token", resetPassword);
 
 // =========GOOGLE SIGN-IN AUTH=============
 router.get("/google", (req, res, next) => {
-  const intent = req.query.intent
+  const intent = req.query.intent;
 
   req.session.authIntent = intent;
 
@@ -58,7 +104,11 @@ router.get(
     const intent = req.query.state || "auth";
 
     if (intent === "connect") {
-      return responseHandler(res, null, "Google account connected successfully");
+      return responseHandler(
+        res,
+        null,
+        "Google account connected successfully"
+      );
     } else {
       const user = await getUserByGoogleID(req.user.googleId);
       const token = generateToken(user.id);
