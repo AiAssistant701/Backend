@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import { sanitizeControllerInput } from "../utils/helpers.js";
 import { processUserRequest } from "../utils/taskProcessor.js";
 import responseHandler from "../middlewares/responseHandler.js";
 
@@ -7,7 +8,10 @@ dotenv.config();
 export const handleAIRequest = async (req, res, next) => {
   try {
     let user = req.user;
-    const { provider, prompt } = req.body;
+    let { provider, prompt } = req.body;
+
+    provider = sanitizeControllerInput(provider);
+    prompt = sanitizeControllerInput(prompt);
 
     const { result } = await processUserRequest({
       userId: user.id,

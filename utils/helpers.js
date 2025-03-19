@@ -1,5 +1,6 @@
 import axios from "axios";
 import dotenv from "dotenv";
+import sanitizeHtml from "sanitize-html";
 
 dotenv.config();
 
@@ -76,4 +77,20 @@ export const extractReminderText = (message) => {
       ""
     )
     .trim();
+};
+
+// =======================
+//  to sanitize input
+// =======================
+export const sanitizeControllerInput = (input) => {
+  if (typeof input !== "string") return input;
+
+  input = input.replace(/\$/g, "");
+
+  input = sanitizeHtml(input, {
+    allowedTags: [],
+    allowedAttributes: {},
+  });
+
+  return input.trim().substring(0, 500);
 };

@@ -6,34 +6,43 @@ import { extractTime, extractReminderText } from "../helpers.js";
 import { sendWhatsAppMessage } from "../../integrations/whatsappService.js";
 
 export const handleHealthReminder = async (userMessage, userId) => {
-  const user = await getUserById(userId);
-  const reminderTime = extractTime(userMessage);
-  const reminderText = extractReminderText(userMessage);
+  try {
+    const user = await getUserById(userId);
+    const reminderTime = extractTime(userMessage);
+    const reminderText = extractReminderText(userMessage);
 
-  if (!user.phoneNumber) return "Phone Number is required for user!";
+    if (!user.phoneNumber)
+      throw new Error("Phone Number is required for user!");
 
-  if (!reminderTime) return "Please specify a time for your reminder.";
+    if (!reminderTime)
+      throw new Error("Please specify a time for your reminder.");
 
-  const reminderDate = moment(reminderTime, ["h:mm A"]).toDate();
+    const reminderDate = moment(reminderTime, ["h:mm A"]).toDate();
 
-  await HealthReminder.create({
-    userId,
-    text: reminderText,
-    time: reminderDate,
-    phoneNumber: user.phoneNumber,
-  });
+    await HealthReminder.create({
+      userId,
+      text: reminderText,
+      time: reminderDate,
+      phoneNumber: user.phoneNumber,
+    });
 
-  const cronTime = `${moment(reminderDate).minutes()} ${moment(
-    reminderDate
-  ).hours()} * * *`;
-
-  cron.schedule(cronTime, async () => {
-    await sendWhatsAppMessage(user.phoneNumber, `⏰ Reminder: ${reminderText}`);
-  });
-
-  return {
-    response: `Got it! I'll remind you to '${reminderText}' at ${moment(
+    const cronTime = `${moment(reminderDate).minutes()} ${moment(
       reminderDate
-    ).format("h:mm A")}.`,
-  };
+    ).hours()} * * *`;
+
+    cron.schedule(cronTime, async () => {
+      await sendWhatsAppMessage(
+        user.phoneNumber,
+        `⏰ Reminder: ${reminderText}`
+      );
+    });
+
+    return {
+      response: `Got it! I'll remind you to '${reminderText}' at ${moment(
+        reminderDate
+      ).format("h:mm A")}.`,
+    };
+  } catch (error) {
+    throw error;
+  }
 };

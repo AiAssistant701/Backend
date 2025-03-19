@@ -57,6 +57,7 @@
     "pdf2image": "^1.2.3",
     "pdf2pic": "^3.1.4",
     "regex": "^6.0.1",
+    "sanitize-html": "^2.15.0",
     "sharp": "^0.33.5",
     "winston": "^3.17.0"
   },
