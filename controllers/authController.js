@@ -19,7 +19,7 @@ const generateResetToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "1h" });
 };
 
-// @route   POST /api/auth/signup
+// @route   POST /api/v1/auth/signup
 // @desc    Register a new user
 export const registerUser = async (req, res, next) => {
   let user;
@@ -117,7 +117,7 @@ export const registerUser = async (req, res, next) => {
   }
 };
 
-// @route   POST /api/auth/login
+// @route   POST /api/v1/auth/login
 // @desc    Authenticate user & get token
 export const loginUser = async (req, res, next) => {
   let user;
@@ -224,7 +224,7 @@ export const loginUser = async (req, res, next) => {
   }
 };
 
-// @route   POST /api/auth/logout
+// @route   POST /api/v1/auth/logout
 // @desc    Logout user
 export const logoutUser = (req, res) => {
   res.cookie("jwt", "", {
@@ -234,7 +234,7 @@ export const logoutUser = (req, res) => {
   return responseHandler(res, null, "Logged out successfully");
 };
 
-// @route   GET /api/auth/verify-email/:token
+// @route   GET /api/v1/auth/verify-email/:token
 // @desc    Verify a user's email
 export const verifyEmail = async (req, res, next) => {
   const { token } = req.params;
@@ -253,7 +253,7 @@ export const verifyEmail = async (req, res, next) => {
   }
 };
 
-// @route   POST /api/auth/forgot-password
+// @route   POST /api/v1/auth/forgot-password
 // @desc    Send password reset email
 export const requestPasswordReset = async (req, res, next) => {
   let user;
@@ -285,7 +285,7 @@ export const requestPasswordReset = async (req, res, next) => {
   }
 };
 
-// @route   POST /api/auth/reset-password/:token
+// @route   POST /api/v1/auth/reset-password/:token
 // @desc    Reset user password
 export const resetPassword = async (req, res, next) => {
   const { token } = req.params;
