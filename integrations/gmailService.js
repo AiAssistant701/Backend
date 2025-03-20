@@ -164,7 +164,7 @@ export const summarizeUnreadEmails = async (googleId) => {
     const emails = await getUnreadEmails(googleId);
 
     const summarizedEmails = await Promise.all(
-      emails.map(async (email) => {
+      emails.response.map(async (email) => {
         let payload = {
           userId: user.id,
           query: `Generate a summary for this email: ${email.snippet}`,

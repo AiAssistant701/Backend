@@ -1,4 +1,3 @@
-import { FetchResponseFromJSON } from "@pinecone-database/pinecone/dist/pinecone-generated-ts-fetch/db_data/index.js";
 import {
   getUserByEmail,
   createGoogleUser,
