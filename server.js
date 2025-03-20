@@ -97,7 +97,7 @@ passport.deserializeUser((user, done) => {
 
 // ========GOOGLE LOGIN TEST=========
 app.get("/", (req, res) => {
-  res.send("<a href='/api/v1/auth/google?intent=auth'>Login with Google</a>");
+  res.send("<a href='/api/v1/auth/google?intent=connect'>Login with Google</a>");
 });
 
 // ======================

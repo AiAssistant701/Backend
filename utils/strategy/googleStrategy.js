@@ -1,3 +1,4 @@
+import { FetchResponseFromJSON } from "@pinecone-database/pinecone/dist/pinecone-generated-ts-fetch/db_data/index.js";
 import {
   getUserByEmail,
   createGoogleUser,
@@ -10,6 +11,7 @@ export const googleStrategyConfig = {
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   callbackURL: `${process.env.BACKEND_API}/api/v1/auth/google/callback`,
   scope: [
+    "openid",
     "profile",
     "email",
     "https://www.googleapis.com/auth/gmail.send",
@@ -17,11 +19,9 @@ export const googleStrategyConfig = {
     "https://www.googleapis.com/auth/calendar.events",
     "https://www.googleapis.com/auth/drive.file",
   ],
-  access_type: "offline",
+  accessType: "offline",
   prompt: "consent",
-  include_granted_scopes: true,
-  approval_prompt: "force",
-  passReqToCallback: true
+  passReqToCallback: true,
 };
 
 export const handleGoogleAuth = async (
@@ -42,9 +42,6 @@ export const handleGoogleAuth = async (
     let user = await getUserByEmail(email);
 
     if (intent === "connect") {
-      if (user?.googleId) {
-        return done(null, false, { message: "User is already linked to Google" });
-      }
       await updateUserWithTokens(email, profile.id, tokens);
       return done(null, { googleId: profile.id, email, tokens });
     } else {
@@ -67,4 +64,3 @@ export const handleGoogleAuth = async (
     return done(null, false, { message: "Internal server error" });
   }
 };
-

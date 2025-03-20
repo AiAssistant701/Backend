@@ -1,3 +1,4 @@
+import dotenv from 'dotenv'
 import express from "express";
 import passport from "passport";
 import User from "../../models/User.js";
@@ -17,6 +18,8 @@ import verifyToken from "../../middlewares/authMiddleware.js";
 import { checkRole } from "../../middlewares/rolesMiddleware.js";
 import responseHandler from "../../middlewares/responseHandler.js";
 import { sanitizeInput } from "../../middlewares/sanitizeInput.js";
+
+dotenv.config()
 
 const router = express.Router();
 
@@ -89,9 +92,9 @@ router.get("/google", (req, res, next) => {
 
   req.session.authIntent = intent;
 
-  passport.authenticate("google", {
-    state: intent,
-  })(req, res, next);
+  const authorizationURL = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=${process.env.BACKEND_API}/api/v1/auth/google/callback&scope=openid profile email https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/drive.file&access_type=offline&prompt=consent&state=${intent}`;
+
+  res.redirect(authorizationURL);
 });
 
 router.get(

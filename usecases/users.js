@@ -32,7 +32,7 @@ export const updateUserWithTokens = async (email, googleId, tokens) => {
       $set: {
         googleId,
         "tokens.access_token": tokens.access_token,
-        "tokens.refresh_token": tokens.refresh_token || "",
+        "tokens.refresh_token": tokens.refresh_token,
         emailVerified: true,
       },
     },
