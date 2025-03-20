@@ -168,7 +168,7 @@ export const summarizeUnreadEmails = async (googleId) => {
         let payload = {
           userId: user.id,
           query: `Generate a summary for this email: ${email.snippet}`,
-          provider: OPENAI,
+          provider: GEMINI,
         };
 
         let response = await chatbotService(SEND_EMAIL, payload);
