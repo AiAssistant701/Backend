@@ -13,6 +13,8 @@ export const handleAIRequest = async (req, res, next) => {
     provider = sanitizeControllerInput(provider);
     prompt = sanitizeControllerInput(prompt);
 
+    console.log(user.id, user.googleId, prompt, provider);
+
     const { result } = await processUserRequest({
       userId: user.id,
       googleId: user.googleId,

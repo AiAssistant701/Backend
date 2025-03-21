@@ -195,17 +195,115 @@ const DEFAULT_TASK_MODEL_MAPPING = {
   [HEALTH_REMINDERS]: ANTHROPIC,
 };
 
+// Task category mapping for capability grouping
+const TASK_CAPABILITY_MAPPING = {
+  [RESEARCH_ANALYSIS]: ["research", "analysis", "comprehension"],
+  [MESSAGE_PROCESSING]: ["textGeneration", "communication"],
+  [UPLOAD_FILE]: ["fileHandling", "dataProcessing"],
+  [FILE_RETRIEVAL]: ["fileHandling", "search"],
+  [ORGANIZE_FILES]: ["organization", "categorization"],
+  [FINANCE_ANALYSIS]: ["analysis", "finance", "math"],
+  [SEND_EMAIL]: ["communication", "writing"],
+  [FETCH_UNREAD_EMAILS]: ["retrieval", "communication"],
+  [SUMMARIZE_EMAILS]: ["summarization", "communication"],
+  [SEARCH_EMAILS]: ["search", "retrieval"],
+  [MEETING_SCHEDULING]: ["scheduling", "organization"],
+  [FETCH_UPCOMING_EVENTS]: ["retrieval", "scheduling"],
+  [MARKET_RESEARCH]: ["research", "analysis", "business"],
+  [QUICK_ANSWERS]: ["factRetrieval", "responseSpeed"],
+  [REPORT_GENERATION]: ["writing", "structuring", "analysis"],
+  [PROGRESS_TRACKING]: ["organization", "monitoring"],
+  [HEALTH_REMINDERS]: ["reminders", "health", "personalization"],
+};
+
+// Model strengths by capability area (0-10 scale)
+const MODEL_CAPABILITY_STRENGTHS = {
+  [OPENAI]: {
+    textGeneration: 9,
+    search: 9,
+    scheduling: 8,
+    communication: 8,
+    summarization: 8,
+    responseSpeed: 9,
+    analysis: 7,
+    research: 7,
+    organization: 7,
+  },
+  [ANTHROPIC]: {
+    communication: 9,
+    writing: 9,
+    research: 8,
+    analysis: 8,
+    summarization: 8,
+    health: 9,
+    personalization: 8,
+    textGeneration: 8,
+  },
+  [COHERE]: {
+    structuring: 9,
+    writing: 8,
+    research: 7,
+    summarization: 7,
+    analysis: 7,
+    responseSpeed: 7,
+  },
+  [HUGGINGFACE]: {
+    research: 9,
+    analysis: 9,
+    finance: 9,
+    math: 8,
+    business: 8,
+  },
+  [MISTRAL]: {
+    organization: 9,
+    scheduling: 8,
+    fileHandling: 7,
+    categorization: 8,
+    analysis: 7,
+  },
+  [GEMINI]: {
+    summarization: 9,
+    responseSpeed: 9,
+    monitoring: 9,
+    research: 8,
+    writing: 8,
+    analysis: 7,
+  },
+  [GROK]: {
+    fileHandling: 9,
+    dataProcessing: 8,
+    search: 8,
+    organization: 8,
+    responseSpeed: 8,
+  },
+};
+
 // =======================
 // Get the best available AI model for a specific task based on user's API keys
 // =======================
-export const getModelForTask = (
+export const getModelForTaskWithReasoning = (
   taskType,
   availableModels = [],
   context = {}
 ) => {
+  // Initialize response object
+  const response = {
+    selectedModel: null,
+    taskType: taskType,
+    selectionReasoning: {
+      defaultModel: DEFAULT_TASK_MODEL_MAPPING[taskType] || OPENAI,
+      defaultAvailable: false,
+      availableModels: [...availableModels],
+      scoreBreakdown: [],
+      fallbacksConsidered: false,
+    },
+    capabilities: {},
+    alternativeOptions: [],
+  };
+
   if (!availableModels || availableModels.length === 0) {
     console.warn("No models available - user has not stored any API keys");
-    return null;
+    return response;
   }
 
   // Get the default preferred model for this task
@@ -213,52 +311,196 @@ export const getModelForTask = (
 
   // If the user has the default model available, use it
   if (availableModels.includes(defaultModel)) {
-    return defaultModel;
+    response.selectedModel = defaultModel;
+    response.selectionReasoning.defaultAvailable = true;
+
+    // Still calculate scores for all models for comparison
+    const scores = calculateModelScores(taskType, availableModels, context);
+    response.selectionReasoning.scoreBreakdown = scores;
+
+    // Fill in capabilities
+    response.capabilities = getModelCapabilitiesForTask(defaultModel, taskType);
+
+    // Generate alternatives
+    response.alternativeOptions = generateAlternativeOptions(
+      defaultModel,
+      availableModels,
+      scores
+    );
+
+    return response;
   }
 
-  // Otherwise, find the best available model based on capabilities
-  let bestModel = null;
-  let bestScore = -1;
+  // Calculate scores for all available models
+  const scores = calculateModelScores(taskType, availableModels, context);
+  response.selectionReasoning.scoreBreakdown = scores;
 
-  availableModels.forEach((model) => {
-    const capabilities = MODEL_CAPABILITIES[model] || {};
-    const score = capabilities[taskType] || 0;
+  // Find the best model based on scores
+  if (scores.length > 0) {
+    // Sort by adjusted score descending
+    scores.sort((a, b) => b.adjustedScore - a.adjustedScore);
+    response.selectedModel = scores[0].model;
 
-    // Apply context adjustments if needed
-    let adjustedScore = score;
+    // Fill in capabilities for the selected model
+    response.capabilities = getModelCapabilitiesForTask(
+      response.selectedModel,
+      taskType
+    );
 
-    // Example: Adjust score based on task complexity
-    if (context.complexity === "high" && model === ANTHROPIC) {
-      adjustedScore += 1;
-    }
+    // Generate alternatives
+    response.alternativeOptions = generateAlternativeOptions(
+      response.selectedModel,
+      availableModels,
+      scores
+    );
 
-    // Example: Adjust score based on response time needs
-    if (context.urgent && (model === OPENAI || model === GEMINI)) {
-      adjustedScore += 1;
-    }
-
-    if (adjustedScore > bestScore) {
-      bestScore = adjustedScore;
-      bestModel = model;
-    }
-  });
-
-  // If we found a suitable model, return it
-  if (bestModel) {
-    return bestModel;
+    return response;
   }
 
-  // As a last resort, try to find a fallback based on the fallback order
+  // If no suitable model found, try fallbacks
+  response.selectionReasoning.fallbacksConsidered = true;
   if (MODEL_FALLBACK_ORDER[defaultModel]) {
     for (const fallbackModel of MODEL_FALLBACK_ORDER[defaultModel]) {
       if (availableModels.includes(fallbackModel)) {
-        return fallbackModel;
+        response.selectedModel = fallbackModel;
+        response.capabilities = getModelCapabilitiesForTask(
+          fallbackModel,
+          taskType
+        );
+        return response;
       }
     }
   }
 
-  // If all else fails, return the first available model
-  return availableModels[0];
+  // Last resort: use first available model
+  if (availableModels.length > 0) {
+    response.selectedModel = availableModels[0];
+    response.capabilities = getModelCapabilitiesForTask(
+      availableModels[0],
+      taskType
+    );
+  }
+
+  return response;
+};
+
+// =======================
+// Helper function to calculate scores for all available models
+// =======================
+const calculateModelScores = (taskType, availableModels, context) => {
+  const scores = [];
+
+  availableModels.forEach((model) => {
+    const capabilities = MODEL_CAPABILITIES[model] || {};
+    const baseScore = capabilities[taskType] || 0;
+
+    // Track score adjustments for transparency
+    const adjustments = [];
+    let adjustedScore = baseScore;
+
+    // Apply context adjustments
+    if (context.complexity === "high" && model === ANTHROPIC) {
+      adjustedScore += 1;
+      adjustments.push({ reason: "complexity", value: 1 });
+    }
+
+    if (context.urgent && (model === OPENAI || model === GEMINI)) {
+      adjustedScore += 1;
+      adjustments.push({ reason: "urgent", value: 1 });
+    }
+
+    // Add domain-specific adjustments
+    if (context.domain === "finance" && model === HUGGINGFACE) {
+      adjustedScore += 1;
+      adjustments.push({ reason: "domain:finance", value: 1 });
+    }
+
+    if (context.creativity === "high" && model === ANTHROPIC) {
+      adjustedScore += 1;
+      adjustments.push({ reason: "creativity", value: 1 });
+    }
+
+    scores.push({
+      model,
+      baseScore,
+      adjustedScore,
+      adjustments,
+    });
+  });
+
+  return scores;
+};
+
+// =======================
+// Helper function to extract relevant capabilities for a model and task
+// =======================
+const getModelCapabilitiesForTask = (model, taskType) => {
+  const capabilities = {};
+
+  // Get capability categories relevant to this task
+  const relevantCapabilities = TASK_CAPABILITY_MAPPING[taskType] || [];
+
+  // For each relevant capability, get the model's strength
+  relevantCapabilities.forEach((capability) => {
+    if (
+      MODEL_CAPABILITY_STRENGTHS[model] &&
+      MODEL_CAPABILITY_STRENGTHS[model][capability] !== undefined
+    ) {
+      capabilities[capability] = MODEL_CAPABILITY_STRENGTHS[model][capability];
+    }
+  });
+
+  return capabilities;
+};
+
+// =======================
+// Helper function to generate ranked alternative options
+// =======================
+const generateAlternativeOptions = (selectedModel, availableModels, scores) => {
+  // Sort scores by adjusted score descending
+  const sortedScores = [...scores].sort(
+    (a, b) => b.adjustedScore - a.adjustedScore
+  );
+
+  // Create alternatives, excluding the selected model
+  const alternatives = sortedScores
+    .filter((score) => score.model !== selectedModel)
+    .map((score, index) => ({
+      model: score.model,
+      score: score.adjustedScore,
+      rank: index + 2, // +2 because the selected model is rank 1
+    }));
+
+  // Add top unavailable models as suggestions
+  const allModels = [
+    OPENAI,
+    ANTHROPIC,
+    GEMINI,
+    MISTRAL,
+    HUGGINGFACE,
+    COHERE,
+    GROK,
+  ];
+  const unavailableModels = allModels.filter(
+    (model) => !availableModels.includes(model)
+  );
+
+  // Get top 2 unavailable models that would be good for this task
+  const topUnavailableModels = unavailableModels
+    .map((model) => ({
+      model,
+      score: MODEL_CAPABILITIES[model]?.[scores[0].taskType] || 0,
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 2)
+    .map((item, index) => ({
+      model: item.model,
+      score: item.score,
+      rank: alternatives.length + index + 2,
+      unavailable: true,
+    }));
+
+  return [...alternatives, ...topUnavailableModels];
 };
 
 // =======================
@@ -310,14 +552,47 @@ export const getUserAvailableModels = (user) => {
 };
 
 // =======================
-// Complete helper function to get the best model for a task based on user's available API keys
+// Original helper function
 // =======================
-export const selectBestModelForUser = async (
+export const getModelForTask = (
+  taskType,
+  availableModels = [],
+  context = {}
+) => {
+  const response = getModelForTaskWithReasoning(
+    taskType,
+    availableModels,
+    context
+  );
+  return response.selectedModel;
+};
+
+// =======================
+// Complete helper function to get the best model for a task based on user's available API keys
+// with detailed reasoning for the frontend
+// =======================
+export const selectBestModelForUserWithReasoning = async (
   taskType,
   userId,
   context = {}
 ) => {
   const user = await getUserById(userId);
   const availableModels = getUserAvailableModels(user);
-  return getModelForTask(taskType, availableModels, context);
+  return getModelForTaskWithReasoning(taskType, availableModels, context);
+};
+
+// =======================
+// Legacy function preserved for backward compatibility
+// =======================
+export const selectBestModelForUser = async (
+  taskType,
+  userId,
+  context = {}
+) => {
+  const result = await selectBestModelForUserWithReasoning(
+    taskType,
+    userId,
+    context
+  );
+  return result;
 };

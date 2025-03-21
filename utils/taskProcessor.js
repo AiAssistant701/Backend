@@ -42,7 +42,9 @@ export const processUserRequest = async ({
     prompt
   );
 
-  const selectedProvider = await selectBestModelForUser(taskType, userId);
+  const selectedProviderData =
+    provider || (await selectBestModelForUser(taskType, userId));
+  const selectedProvider = selectedProviderData.selectedModel;
   console.log("selectedProvider", selectedProvider);
 
   const payload = await buildPayloadForTask({
@@ -54,7 +56,8 @@ export const processUserRequest = async ({
     file,
   });
 
-  const result = await aiOrchestrator(taskType, payload);
+  let result = await aiOrchestrator(taskType, payload);
+  result.metadata = selectedProviderData;
 
   await updateTaskToCompleted(taskHistory._id);
 
