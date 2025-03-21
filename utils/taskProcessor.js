@@ -1,5 +1,6 @@
-import { classifyIntent } from "./intentClassifier.js";
 import { getModelForTask } from "./modelRouter.js";
+import { classifyIntent } from "./intentClassifier.js";
+import { selectBestModelForUser } from "./modelRouter.js";
 import { extractEventDetails } from "./extractEventDetails.js";
 import { aiOrchestrator } from "../services/aiOrchestratorService.js";
 import { generateTaskDescription, extractEmailDetails } from "./helpers.js";
@@ -41,7 +42,8 @@ export const processUserRequest = async ({
     prompt
   );
 
-  const selectedProvider = provider || getModelForTask(taskType);
+  const selectedProvider = await selectBestModelForUser(taskType, userId);
+  console.log("selectedProvider", selectedProvider);
 
   const payload = await buildPayloadForTask({
     taskType,
