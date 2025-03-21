@@ -84,3 +84,12 @@ export const createGoogleUser = async (
 
   return user ? user.toJSON() : null;
 };
+
+// =======================
+// fetches all users with google id
+// =======================
+export const getAllUsersWithGoogleId = async () => {
+  const users = await User.find({ googleId: { $ne: null } }, "googleId email");
+
+  return users.map((user) => user.toJSON());
+};

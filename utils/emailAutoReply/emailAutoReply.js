@@ -13,8 +13,9 @@ export const processAutoReplies = async (googleId) => {
   const startTime = Date.now(); // Start time for execution tracking
   try {
     const unreadEmails = await getUnreadEmails(googleId);
+    const unreadEmailsResponse = unreadEmails.response;
 
-    for (const email of unreadEmails) {
+    for (const email of unreadEmailsResponse) {
       const needsReply = await shouldAutoReply(email);
       console.log(
         `Email from ${email.from} needs reply: ${needsReply.shouldReply}`
