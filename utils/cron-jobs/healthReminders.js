@@ -31,8 +31,14 @@ export const handleHealthReminder = async (userMessage, userId) => {
     ).hours()} * * *`;
 
     cron.schedule(cronTime, async () => {
-      await sendWhatsAppMessage(
-        user.phoneNumber,
+      // await sendWhatsAppMessage(
+      //   user.phoneNumber,
+      //   `⏰ Reminder: ${reminderText}`
+      // );
+      await sendEmail(
+        user?.googleId,
+        user.email,
+        "Health Reminder",
         `⏰ Reminder: ${reminderText}`
       );
     });
