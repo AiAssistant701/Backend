@@ -1,4 +1,14 @@
-import { pipeline } from "@xenova/transformers";
+import axios from "axios";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const HUGGINGFACE_API_URL =
+  "https://api-inference.huggingface.co/models/facebook/bart-large-mnli";
+const API_HEADERS = {
+  Authorization: `Bearer ${process.env.HUGGINGFACE_TOKEN}`,
+  "Content-Type": "application/json",
+};
 
 const EMAIL_CATEGORIES = [
   "out of office",
@@ -20,22 +30,6 @@ const EMAIL_CATEGORIES = [
 ];
 
 const EMAIL_PRIORITIES = ["urgent", "important", "standard", "low priority"];
-
-let classifierInstance = null;
-
-// =======================
-// Gets or initializes the classifier
-// =======================
-const getClassifier = async () => {
-  if (!classifierInstance) {
-    console.log("Initializing zero-shot classification model...");
-    classifierInstance = await pipeline(
-      "zero-shot-classification",
-      "Xenova/bart-large-mnli"
-    );
-  }
-  return classifierInstance;
-};
 
 // =======================
 // Analyzes text for urgency indicators
@@ -140,10 +134,7 @@ const analyzeUrgency = (text) => {
 // Classifies the text
 // =======================
 export const classifyText = async (text, confidenceThreshold = 0.3) => {
-  const classifier = await getClassifier();
-
   const cleanedText = text.trim().slice(0, 1000);
-
   if (!cleanedText || cleanedText.length < 5) {
     return {
       category: "general inquiry",
@@ -152,45 +143,51 @@ export const classifyText = async (text, confidenceThreshold = 0.3) => {
     };
   }
 
+  const chunkSize = 10;
+  const labelChunks = [];
+
+  // Split labels into chunks
+  for (let i = 0; i < EMAIL_CATEGORIES.length; i += chunkSize) {
+    labelChunks.push(EMAIL_CATEGORIES.slice(i, i + chunkSize));
+  }
+
+  let bestLabel = null;
+  let bestScore = -1;
+
   try {
-    const result = await classifier(cleanedText, EMAIL_CATEGORIES, {
-      multi_label: false,
-    });
+    for (const chunk of labelChunks) {
+      try {
+        const response = await axios.post(
+          HUGGINGFACE_API_URL,
+          {
+            inputs: cleanedText,
+            parameters: {
+              candidate_labels: chunk,
+            },
+          },
+          { headers: API_HEADERS }
+        );
 
-    const topCategory = result.labels[0];
-    const confidence = result.scores[0];
+        if (response.data.labels && response.data.scores) {
+          const topLabel = response.data.labels[0];
+          const topScore = response.data.scores[0];
 
-    const secondCategory = result.labels[1];
-    const secondConfidence = result.scores[1];
-
-    const urgentInquiryIndex = result.labels.indexOf("urgent inquiry");
-    const urgentConfidence =
-      urgentInquiryIndex >= 0 ? result.scores[urgentInquiryIndex] : 0;
-
-    // Check for urgency in the text
-    const urgencyAnalysis = analyzeUrgency(cleanedText);
-
-    let adjustedCategory = topCategory;
-    let adjustedConfidence = confidence;
-
-    if (
-      urgencyAnalysis.isUrgent &&
-      urgentInquiryIndex >= 0 &&
-      urgentConfidence > 0.8 * confidence
-    ) {
-      // If text has strong urgency indicators and "urgent inquiry" is close behind
-      adjustedCategory = "urgent inquiry";
-      adjustedConfidence = Math.max(urgentConfidence, confidence * 0.9);
+          if (topScore > bestScore) {
+            bestLabel = topLabel;
+            bestScore = topScore;
+          }
+        }
+      } catch (error) {
+        console.error("Error calling Hugging Face API:", error);
+      }
     }
 
+    // Use bestLabel and bestScore instead of response.data
     return {
-      category: adjustedCategory,
-      originalCategory: topCategory,
-      confidence: adjustedConfidence,
-      secondCategory: secondCategory,
-      secondConfidence: secondConfidence,
-      urgencyAnalysis: urgencyAnalysis,
-      fallback: adjustedConfidence < confidenceThreshold,
+      category:
+        bestScore >= confidenceThreshold ? bestLabel : "general inquiry",
+      confidence: bestScore,
+      fallback: bestScore < confidenceThreshold,
     };
   } catch (error) {
     console.error("Classification error:", error);
@@ -207,9 +204,18 @@ export const classifyText = async (text, confidenceThreshold = 0.3) => {
 // Determines the priority level of an email
 // =======================
 export const classifyPriority = async (text) => {
-  const classifier = await getClassifier();
-  const result = await classifier(text, EMAIL_PRIORITIES);
-  return result.labels[0];
+  try {
+    const response = await axios.post(
+      HUGGINGFACE_API_URL,
+      { inputs: text, parameters: { candidate_labels: EMAIL_PRIORITIES } },
+      { headers: API_HEADERS }
+    );
+
+    return response.data.labels[0];
+  } catch (error) {
+    console.error("Priority classification error:", error);
+    return "standard";
+  }
 };
 
 // =======================
@@ -226,6 +232,7 @@ export const shouldAutoReply = async (email) => {
   const classificationText = [subject, body, body].join(" ");
 
   const classification = await classifyText(classificationText);
+  console.log("classification", classification);
   const priority = await classifyPriority(fullText);
 
   // Minimum confidence threshold for auto-replies
