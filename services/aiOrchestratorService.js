@@ -1,6 +1,5 @@
 import { chatbotService } from "./chatbotService.js";
 import { analyzeFinance } from "./financeService.js";
-import { processMessage } from "./messagingService.js";
 import { performMarketResearch } from "./research/marketResearch.js";
 import { handleHealthReminder } from "../utils/cron-jobs/healthReminders.js";
 import {
@@ -52,8 +51,8 @@ export const aiOrchestrator = async (taskType, payload) => {
     switch (taskType) {
       case RESEARCH_ANALYSIS:
         modelUsed = "Hugging Face BART";
-        reasoning = "Best model for research paper summarization.";
-        result = await processResearchPaper(payload);
+        reasoning = "Best model for research summarization.";
+        result = await chatbotService(taskType, payload);
         decisionScore = 0.95;
         break;
 
