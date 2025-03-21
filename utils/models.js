@@ -26,12 +26,17 @@ export const callAIModel = async (userId, provider, prompt) => {
     payload,
     headers = { Authorization: `Bearer ${apiKey}` };
 
+  const systemMessage = "You are an AI assistant named YAAS. Answer concisely and professionally.";
+
   switch (provider) {
     case OPENAI:
       apiUrl = "https://api.openai.com/v1/chat/completions";
       payload = {
         model: "gpt-4o",
-        messages: [{ role: "user", content: prompt }],
+        messages: [
+          { role: "system", content: systemMessage },
+          { role: "user", content: prompt },
+        ],
         max_tokens: 100,
       };
       break;
@@ -40,7 +45,10 @@ export const callAIModel = async (userId, provider, prompt) => {
       apiUrl = "https://api.cohere.ai/v2/chat";
       payload = {
         model: "command-r-plus",
-        messages: [{ role: "user", content: prompt }],
+        messages: [
+          { role: "system", content: systemMessage },
+          { role: "user", content: prompt },
+        ],
         max_tokens: 100,
       };
       break;
@@ -48,14 +56,17 @@ export const callAIModel = async (userId, provider, prompt) => {
     case HUGGINGFACE:
       apiUrl =
         "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2";
-      payload = { inputs: prompt, parameters: { max_new_tokens: 200 } };
+      payload = {
+        inputs: `[INST] ${systemMessage} [/INST]\n\n${prompt}`,
+        parameters: { max_new_tokens: 200 },
+      };
       break;
 
     case ANTHROPIC:
       apiUrl = "https://api.anthropic.com/v1/messages";
       payload = {
         model: "claude-3-opus-20240229",
-        system: "You are an AI assistant. Answer concisely.",
+        system: systemMessage,
         messages: [{ role: "user", content: prompt }],
         max_tokens: 512,
       };
@@ -67,7 +78,10 @@ export const callAIModel = async (userId, provider, prompt) => {
       apiUrl = "https://api.mistral.ai/v1/chat/completions";
       payload = {
         model: "mistral-small-latest",
-        messages: [{ role: "user", content: prompt }],
+        messages: [
+          { role: "system", content: systemMessage },
+          { role: "user", content: prompt },
+        ],
         max_tokens: 100,
       };
       break;
@@ -75,7 +89,14 @@ export const callAIModel = async (userId, provider, prompt) => {
     case GEMINI:
       apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash-001:generateContent?key=${apiKey}`;
       payload = {
-        contents: [{ parts: [{ text: prompt }] }],
+        contents: [
+          {
+            parts: [
+              { text: systemMessage },
+              { text: prompt },
+            ],
+          },
+        ],
       };
       headers = { "Content-Type": "application/json" };
       break;
@@ -84,7 +105,10 @@ export const callAIModel = async (userId, provider, prompt) => {
       apiUrl = "https://api.x.ai/v1/chat/completions";
       payload = {
         model: "grok-2-latest",
-        messages: [{ role: "user", content: prompt }],
+        messages: [
+          { role: "system", content: systemMessage },
+          { role: "user", content: prompt },
+        ],
         max_tokens: 100,
       };
       break;
@@ -111,13 +135,13 @@ export const callAIModel = async (userId, provider, prompt) => {
 
     if (similarResponses) {
       if (provider === ANTHROPIC) {
-        payload.system = `Here is relevant context:\n\n${similarResponses}`;
+        payload.system = `${systemMessage}\n\nHere is relevant context:\n\n${similarResponses}`;
       } else if (provider === GEMINI) {
-        payload.contents[0].parts[0].text = `Context: ${similarResponses}\n\nUser: ${prompt}`;
+        payload.contents[0].parts[0].text = `${systemMessage}\n\nContext: ${similarResponses}\n\nUser: ${prompt}`;
       } else if (provider === MISTRAL) {
-        payload.messages[0].content = `Context: ${similarResponses}\n\nUser: ${prompt}`;
+        payload.messages[0].content = `${systemMessage}\n\nContext: ${similarResponses}\n\nUser: ${prompt}`;
       } else {
-        payload.prompt = `Context: ${similarResponses}\n\nUser: ${prompt}`;
+        payload.prompt = `${systemMessage}\n\nContext: ${similarResponses}\n\nUser: ${prompt}`;
       }
     }
 

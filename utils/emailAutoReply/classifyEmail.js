@@ -182,7 +182,7 @@ export const classifyText = async (text, confidenceThreshold = 0.3) => {
       }
     }
 
-    // Use bestLabel and bestScore instead of response.data
+    // Use bestLabel and bestScore
     return {
       category:
         bestScore >= confidenceThreshold ? bestLabel : "general inquiry",
