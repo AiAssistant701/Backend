@@ -14,6 +14,10 @@ import { embedText } from "./huggingfaceInference.js";
 import pinecone from "../services/pinecone/pineconeClient.js";
 
 export const callAIModel = async (userId, provider, prompt) => {
+  if (!userId || !provider || !prompt || typeof prompt !== "string") {
+    throw new Error("Invalid input parameters");
+  }
+
   const user = await User.findById(userId);
   if (!user) throw new Error("User not found");
 
@@ -26,7 +30,8 @@ export const callAIModel = async (userId, provider, prompt) => {
     payload,
     headers = { Authorization: `Bearer ${apiKey}` };
 
-  const systemMessage = "You are an AI assistant named YAAS. Answer concisely and professionally.";
+  const systemMessage =
+    "You are an AI assistant named YAAS. Answer concisely and professionally.";
 
   switch (provider) {
     case OPENAI:
@@ -91,10 +96,7 @@ export const callAIModel = async (userId, provider, prompt) => {
       payload = {
         contents: [
           {
-            parts: [
-              { text: systemMessage },
-              { text: prompt },
-            ],
+            parts: [{ text: systemMessage }, { text: prompt }],
           },
         ],
       };
@@ -118,8 +120,24 @@ export const callAIModel = async (userId, provider, prompt) => {
   }
 
   try {
+    // Dynamic truncation based on metadata size
+    const MAX_METADATA_SIZE = 40960; // Pinecone metadata limit
+    const METADATA_OVERHEAD = 100; // Additional bytes for JSON structure
+
+    // Calculate max allowed size for prompt and response
+    const maxPromptSize = Math.floor(
+      (MAX_METADATA_SIZE - METADATA_OVERHEAD) / 2
+    );
+    const maxResponseSize = Math.floor(
+      (MAX_METADATA_SIZE - METADATA_OVERHEAD) / 2
+    );
+
+    // Truncate the prompt and response
+    const truncatedPrompt = prompt.slice(0, maxPromptSize);
+    console.log("Truncated prompt size:", truncatedPrompt.length);
+
     // Retrieve similar past prompts using Pinecone
-    const embedding = await embedText(prompt);
+    const embedding = await embedText(truncatedPrompt);
     const index = pinecone.index(process.env.PINECONE_INDEX);
     const queryResults = await index.query({
       vector: embedding,
@@ -145,7 +163,20 @@ export const callAIModel = async (userId, provider, prompt) => {
       }
     }
 
-    const response = await axios.post(apiUrl, payload, { headers });
+    // Retry mechanism for API calls
+    const retry = async (fn, retries = 3, delay = 1000) => {
+      try {
+        return await fn();
+      } catch (error) {
+        if (retries === 0) throw error;
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        return retry(fn, retries - 1, delay * 2);
+      }
+    };
+
+    const response = await retry(() =>
+      axios.post(apiUrl, payload, { headers })
+    );
 
     let aiResponse;
     switch (provider) {
@@ -177,16 +208,31 @@ export const callAIModel = async (userId, provider, prompt) => {
       throw new Error(`Invalid response format from ${provider}`);
     }
 
+    // Truncate the response
+    const truncatedResponse = aiResponse.slice(0, maxResponseSize);
+    console.log("Truncated response size:", truncatedResponse.length);
+
+    // Prepare metadata with minimal fields
+    const metadata = {
+      p: truncatedPrompt, // Shortened key for "prompt"
+      r: truncatedResponse, // Shortened key for "response"
+    };
+
+    const compressedMetadata = JSON.stringify(metadata);
+    const metadataSize = Buffer.from(compressedMetadata).length;
+    console.log("Metadata size:", metadataSize);
+
+    if (metadataSize > MAX_METADATA_SIZE) {
+      throw new Error("Metadata size exceeds Pinecone limit after compression");
+    }
+
     // Store response embedding in Pinecone
-    const responseEmbedding = await embedText(aiResponse);
+    const responseEmbedding = await embedText(truncatedResponse);
     await index.upsert([
       {
         id: `${userId}-${Date.now()}`,
         values: responseEmbedding,
-        metadata: {
-          prompt,
-          response: aiResponse,
-        },
+        metadata: JSON.parse(compressedMetadata),
       },
     ]);
 
