@@ -95,6 +95,15 @@ export const getAllUsersWithGoogleId = async () => {
 };
 
 // =======================
+// fetches all users with setEmailAutoReply to on
+// =======================
+export const getUsersWithEmailAutoReplyOn = async () => {
+  const users = await User.find({ setEmailAutoReply: "on" }, "googleId email");
+
+  return users.map((user) => user.toJSON());
+};
+
+// =======================
 // update user data
 // =======================
 export const updateUserData = async (userId, data) => {

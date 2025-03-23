@@ -67,6 +67,7 @@ const userSchema = new mongoose.Schema(
     setEmailAutoReply: {
       type: String,
       enum: ["on", "off"],
+      default: "off",
     },
   },
   {
