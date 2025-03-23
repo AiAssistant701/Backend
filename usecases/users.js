@@ -93,3 +93,19 @@ export const getAllUsersWithGoogleId = async () => {
 
   return users.map((user) => user.toJSON());
 };
+
+// =======================
+// update user data
+// =======================
+export const updateUserData = async (userId, data) => {
+  const user = await User.findByIdAndUpdate(
+    userId,
+    {
+      ...data,
+      updatedAt: new Date(),
+    },
+    { new: true, runValidators: true }
+  );
+
+  return user ? user.toJSON() : null;
+};

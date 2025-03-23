@@ -64,6 +64,10 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    setEmailAutoReply: {
+      type: String,
+      enum: ["on", "off"],
+    },
   },
   {
     timestamps: true,

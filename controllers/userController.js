@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import { updateUserData } from "../usecases/users.js";
 import { encrypt, decrypt } from "../utils/crypto.js";
 import { getUserTaskHistory } from "../usecases/taskHistory.js";
 import responseHandler from "../middlewares/responseHandler.js";
@@ -130,17 +131,7 @@ export const updateUser = async (req, res, next) => {
       });
     }
 
-    const user = await User.findByIdAndUpdate(
-      userId,
-      {
-        ...data,
-        updatedAt: new Date(),
-      },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    const user = await updateUserData(userId, data);
 
     if (!user) return next({ statusCode: 400, message: "User not found" });
 
@@ -153,6 +144,50 @@ export const updateUser = async (req, res, next) => {
         phoneNumber: user.phoneNumber,
       },
       "User profile updated!"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @route  POST /api/v1/users/auto-reply
+// @desc  Updates a user's auto-reply setting
+export const updateAutoReplySetting = async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+    const { autoReply } = req.body;
+
+    if (!autoReply) {
+      return next({
+        statusCode: 400,
+        message: "Please provide an auto-reply setting",
+      });
+    }
+
+    if (autoReply !== "on" && autoReply !== "off") {
+      return next({
+        statueCode: 400,
+        message: "Invalid auto-reply setting. Must be 'on' or 'off'",
+      });
+    }
+
+    if (userId !== req.user.id.toString()) {
+      return next({
+        statusCode: 403,
+        message: "You are not authorized to update this user's profile",
+      });
+    }
+
+    const settings = await updateUserData(userId, {
+      setEmailAutoReply: autoReply,
+    });
+
+    if (!settings) return next({ statusCode: 400, message: "User not found" });
+
+    return responseHandler(
+      res,
+      { autoReply: settings.autoReply },
+      "Auto-reply setting updated successfully"
     );
   } catch (error) {
     next(error);

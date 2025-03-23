@@ -9,7 +9,8 @@ import {
   getApiKeys,
   updateApiKeys,
   deleteApiKeys,
-  fetchUserTaskHistory
+  fetchUserTaskHistory,
+  updateAutoReplySetting 
 } from "../../controllers/userController.js";
 
 const router = express.Router();
@@ -21,5 +22,6 @@ router.get("/apikeys/:userId", verifyToken, getApiKeys);
 router.put("/apikeys", verifyToken, updateApiKeys);
 router.delete("/apikeys", verifyToken, deleteApiKeys);
 router.get("/task/history/:userId", verifyToken, fetchUserTaskHistory);
+router.post("/auto-reply/:userId", verifyToken, updateAutoReplySetting);
 
 export default router;
