@@ -14,10 +14,6 @@ import { embedText } from "./huggingfaceInference.js";
 import pinecone from "../services/pinecone/pineconeClient.js";
 
 export const callAIModel = async (userId, provider, prompt) => {
-  if (!userId || !provider || !prompt || typeof prompt !== "string") {
-    throw new Error("Invalid input parameters");
-  }
-
   const user = await User.findById(userId);
   if (!user) throw new Error("User not found");
 
@@ -120,21 +116,11 @@ export const callAIModel = async (userId, provider, prompt) => {
   }
 
   try {
-    // Dynamic truncation based on metadata size
-    const MAX_METADATA_SIZE = 40960; // Pinecone metadata limit
-    const METADATA_OVERHEAD = 100; // Additional bytes for JSON structure
+    const MAX_RESPONSE_SIZE = 20000;
+    const MAX_PROMPT_SIZE = 20000;
 
-    // Calculate max allowed size for prompt and response
-    const maxPromptSize = Math.floor(
-      (MAX_METADATA_SIZE - METADATA_OVERHEAD) / 2
-    );
-    const maxResponseSize = Math.floor(
-      (MAX_METADATA_SIZE - METADATA_OVERHEAD) / 2
-    );
-
-    // Truncate the prompt and response
-    const truncatedPrompt = prompt.slice(0, maxPromptSize);
-    console.log("Truncated prompt size:", truncatedPrompt.length);
+    // Truncate the prompt and response to avoid exceeding metadata size limits
+    const truncatedPrompt = prompt.slice(0, MAX_PROMPT_SIZE);
 
     // Retrieve similar past prompts using Pinecone
     const embedding = await embedText(truncatedPrompt);
@@ -163,20 +149,7 @@ export const callAIModel = async (userId, provider, prompt) => {
       }
     }
 
-    // Retry mechanism for API calls
-    const retry = async (fn, retries = 3, delay = 1000) => {
-      try {
-        return await fn();
-      } catch (error) {
-        if (retries === 0) throw error;
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        return retry(fn, retries - 1, delay * 2);
-      }
-    };
-
-    const response = await retry(() =>
-      axios.post(apiUrl, payload, { headers })
-    );
+    const response = await axios.post(apiUrl, payload, { headers });
 
     let aiResponse;
     switch (provider) {
@@ -208,9 +181,8 @@ export const callAIModel = async (userId, provider, prompt) => {
       throw new Error(`Invalid response format from ${provider}`);
     }
 
-    // Truncate the response
-    const truncatedResponse = aiResponse.slice(0, maxResponseSize);
-    console.log("Truncated response size:", truncatedResponse.length);
+    // Truncate the response to avoid exceeding metadata size limits
+    const truncatedResponse = aiResponse.slice(0, MAX_RESPONSE_SIZE);
 
     // Prepare metadata with minimal fields
     const metadata = {
@@ -219,10 +191,11 @@ export const callAIModel = async (userId, provider, prompt) => {
     };
 
     const compressedMetadata = JSON.stringify(metadata);
+
     const metadataSize = Buffer.from(compressedMetadata).length;
     console.log("Metadata size:", metadataSize);
 
-    if (metadataSize > MAX_METADATA_SIZE) {
+    if (metadataSize > 40960) {
       throw new Error("Metadata size exceeds Pinecone limit after compression");
     }
 
