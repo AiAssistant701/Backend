@@ -7,6 +7,7 @@ import v1MemoryRoutes from "./v1/memoryRoutes.js";
 import v1MhatsappRoutes from "./v1/whatsappRoutes.js";
 import v1AiRoutes from "./v1/aiRoutes.js";
 import v1AdminRoutes from "./v1/adminRoutes.js";
+import v1SubagentsConfig from "./v1/subagentConfigRoutes.js"
 
 const router = express.Router();
 
@@ -18,5 +19,6 @@ router.use("/v1/memory", v1MemoryRoutes);
 router.use("/v1/whatsapp", v1MhatsappRoutes);
 router.use("/v1/ai", v1AiRoutes);
 router.use("/v1/admin", v1AdminRoutes);
+router.use("/v1/subagents", v1SubagentsConfig);
 
 export default router;

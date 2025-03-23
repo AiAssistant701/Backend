@@ -9,7 +9,7 @@ const subagentConfigSchema = new mongoose.Schema({
   subagentType: {
     type: String,
     required: true,
-  }, // e.g., SEND_EMAIL, MEETING_SCHEDULING
+  }, // send_email
   config: {
     type: Object,
     required: true,
