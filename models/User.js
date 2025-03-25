@@ -53,6 +53,11 @@ const userSchema = new mongoose.Schema(
       expiresAt: Date,
     },
     microsoftAuth: {
+      microsoftId: {
+        type: String,
+        unique: true,
+        sparse: true,
+      },
       access_token: String,
       refresh_token: String,
       expiresAt: Date,

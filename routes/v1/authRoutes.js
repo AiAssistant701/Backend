@@ -129,64 +129,20 @@ router.get(
 );
 
 // =========MICROSOFT SIGN-IN AUTH=============
-router.get("/microsoft", (req, res) => {
-  const state = crypto.randomBytes(16).toString("hex");
-  req.session.microsoftState = state;
+router.get(
+  "/microsoft",
+  passport.authenticate("microsoft", {
+    prompt: "select_account",
+  })
+);
 
-  const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?${new URLSearchParams(
-    {
-      client_id: process.env.MICROSOFT_CLIENT_ID,
-      response_type: "code",
-      redirect_uri: process.env.MICROSOFT_REDIRECT_URI,
-      scope: "User.Read Mail.ReadWrite Files.ReadWrite.All",
-      state: state,
-      prompt: "select_account",
-    }
-  )}`;
-
-  logger.info(`Initiating Microsoft auth with state: ${state}`);
-  res.redirect(authUrl);
-});
-
-// Callback handler with state verification
-router.get("/microsoft/callback", async (req, res) => {
-  try {
-    logger.info("Received callback with state: " + req.query.state);
-    logger.info("Session state: " + req.session.microsoftState);
-
-    // Verify state
-    if (!req.query.state || req.query.state !== req.session.microsoftState) {
-      throw new Error("State verification failed");
-    }
-
-    // Clear the state after verification
-    delete req.session.microsoftState;
-
-    // Handle the OAuth code
-    const { code } = req.query;
-    if (!code) throw new Error("No authorization code received");
-
-    const tokens = await getMicrosoftTokens(code);
-    console.log(333, tokens);
-    logger.info("Token exchange successful");
-
-    const profile = await getMicrosoftProfile(tokens.access_token);
-    const user = await getUserByEmail(profile?.mail);
-
-    const redirectUrl = new URL(process.env.FRONTEND_URL);
-    redirectUrl.searchParams.set("microsoft_auth", "success");
-    res.redirect(redirectUrl.toString());
-  } catch (error) {
-    logger.error("Microsoft OAuth error: " + error);
-    const errorUrl = new URL(`${process.env.FRONTEND_URL}/auth-error`);
-    errorUrl.searchParams.set("code", "microsoft_failure");
-    errorUrl.searchParams.set(
-      "reason",
-      error.message.includes("state") ? "state_mismatch" : "auth_error"
-    );
-    res.redirect(errorUrl.toString());
-  }
-});
+router.get(
+  "/microsoft/callback",
+  passport.authenticate("microsoft", {
+    failureRedirect: "/login",
+    successRedirect: process.env.FRONTEND_URL,
+  })
+);
 
 // =========TEST========= Only Admins Can View All Users
 router.get(
