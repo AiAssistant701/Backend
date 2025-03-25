@@ -30,6 +30,10 @@ export const getUserByGoogleID = async (googleId) => {
 // update user with google tokens
 // =======================
 export const updateUserWithTokens = async (email, googleId, tokens) => {
+  const expiresAt = tokens.expires_in
+    ? Date.now() + Number(tokens.expires_in) * 1000
+    : Date.now() + 3600000; // Default 1 hour if expires_in missing
+
   await User.findOneAndUpdate(
     { email },
     {
@@ -38,7 +42,7 @@ export const updateUserWithTokens = async (email, googleId, tokens) => {
           googleId,
           access_token: tokens.access_token,
           refresh_token: tokens.refresh_token,
-          expiresAt: Date.now() + tokens.expires_in * 1000,
+          expiresAt,
         },
         emailVerified: true,
       },
@@ -80,12 +84,14 @@ export const createGoogleUser = async (
   refresh_token,
   expires_in = 3600
 ) => {
+  const expiresAt = Date.now() + Number(expires_in) * 1000;
+
   const user = await User.create({
     googleAuth: {
       googleId: profile.id,
       access_token: access_token,
       refresh_token: refresh_token,
-      expiresAt: Date.now() + expires_in * 1000,
+      expiresAt
     },
     name: profile.displayName,
     email: profile.emails[0].value,
