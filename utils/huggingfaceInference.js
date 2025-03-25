@@ -42,7 +42,7 @@ export const analyzeStatement = async (filePath, userId) => {
       );
     }
   } catch (error) {
-    logger.error("Error analyzing statement:", error);
+    logger.error("Error analyzing statement: " + error);
     throw new Error("Failed to analyze statement: " + error.message);
   }
 };
@@ -63,7 +63,7 @@ export const analyzePdfStatement = async (filePath, userId) => {
       textContent = pdfData.text;
       logger.info("Successfully parsed PDF with pdf-parse");
     } catch (error) {
-      logger.error("Primary PDF parsing error:", error);
+      logger.error("Primary PDF parsing error: " + error);
       parsingError = error;
     }
 
@@ -73,7 +73,7 @@ export const analyzePdfStatement = async (filePath, userId) => {
         textContent = await extractPdfTextWithPdfJs(buffer);
         logger.info("Successfully parsed PDF with pdf.js fallback");
       } catch (fallbackError) {
-        logger.error("Fallback PDF.js parsing error:", fallbackError);
+        logger.error("Fallback PDF.js parsing error: " + fallbackError);
       }
     }
 
@@ -83,20 +83,20 @@ export const analyzePdfStatement = async (filePath, userId) => {
         textContent = await extractPdfTextWithExternalTool(filePath);
         logger.info("Successfully parsed PDF with external tool");
       } catch (externalToolError) {
-        logger.error("External tool parsing error:", externalToolError);
+        logger.error("External tool parsing error: " + externalToolError);
       }
     }
 
     // If all methods failed, throw an appropriate error
     if (!textContent) {
-      logger.error("All PDF parsing methods failed for file:", filePath);
+      logger.error("All PDF parsing methods failed for file: " + filePath);
       throw new Error(
         "Unable to extract text from the PDF. The file may be corrupted, password-protected, or in an unsupported format. Please try a CSV export instead."
       );
     }
 
     logger.info(
-      "Extracted text from PDF (sample):",
+      "Extracted text from PDF (sample):" +
       textContent.substring(0, 200) + "..."
     );
 
@@ -115,7 +115,7 @@ export const analyzePdfStatement = async (filePath, userId) => {
 
     return transactions;
   } catch (error) {
-    logger.error("Error analyzing PDF statement:", error);
+    logger.error("Error analyzing PDF statement: " + error);
     throw error;
   }
 };
@@ -147,7 +147,7 @@ const extractPdfTextWithPdfJs = async (buffer) => {
     
     return fullText;
   } catch (error) {
-    logger.error("PDF.js extraction failed:", error);
+    logger.error("PDF.js extraction failed: " + error);
     throw error;
   }
   */
@@ -179,12 +179,12 @@ const extractPdfTextWithExternalTool = async (filePath) => {
     try {
       await fs.unlink(textFilePath);
     } catch (unlinkError) {
-      logger.info("Failed to delete temporary text file:", unlinkError);
+      logger.info("Failed to delete temporary text file: " + unlinkError);
     }
 
     return textContent;
   } catch (error) {
-    logger.error("External tool extraction failed:", error);
+    logger.error("External tool extraction failed: " + error);
     throw error;
   }
 };
@@ -212,7 +212,7 @@ export const analyzeCsvStatement = async (filePath, userId) => {
 
     return transactions;
   } catch (error) {
-    logger.error("Error analyzing CSV statement:", error);
+    logger.error("Error analyzing CSV statement: " + error);
     throw new Error("Failed to analyze CSV statement: " + error.message);
   }
 };
@@ -704,7 +704,7 @@ export const categorizeTransactions = async (transactions) => {
     });
 
     // Log the response for debugging
-    logger.info("Text classification response:", response);
+    logger.info("Text classification response: " + response);
 
     // Validate the response format
     if (
@@ -723,7 +723,7 @@ export const categorizeTransactions = async (transactions) => {
 
     return categorizedTransactions;
   } catch (error) {
-    logger.error("Error categorizing transactions:", error);
+    logger.error("Error categorizing transactions:" + error);
     return transactions.map((t) => ({
       ...t,
       category: "Uncategorized",

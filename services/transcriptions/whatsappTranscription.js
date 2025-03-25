@@ -48,7 +48,7 @@ export const transcribeWhatsAppAudio = async (audioUrl, userId) => {
 
     return transcription;
   } catch (error) {
-    logger.error("❌ WhatsApp Transcription Error:", error.message);
+    logger.error("❌ WhatsApp Transcription Error: " + error.message);
     throw new Error("Failed to transcribe WhatsApp audio.");
   }
 };

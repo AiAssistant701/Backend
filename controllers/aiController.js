@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import logger from "../utils/logger.js";
 import { sanitizeControllerInput } from "../utils/helpers.js";
 import { processUserRequest } from "../utils/taskProcessor.js";
 import responseHandler from "../middlewares/responseHandler.js";

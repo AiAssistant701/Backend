@@ -148,7 +148,7 @@ router.get("/microsoft/callback", async (req, res) => {
 
     res.redirect(process.env.FRONTEND_URL);
   } catch (error) {
-    logger.error("Microsoft OAuth error:", error);
+    logger.error("Microsoft OAuth error: " + error);
     res.redirect("/error");
   }
 });

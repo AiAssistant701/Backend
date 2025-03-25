@@ -35,8 +35,7 @@ export const sendWhatsAppMessage = async (recipient, message) => {
     return response.data;
   } catch (error) {
     logger.error(
-      "Error sending WhatsApp message:",
-      error.response?.data || error.message
+      "Error sending WhatsApp message:" + error.response?.data || error.message
     );
     throw new Error("Failed to send WhatsApp message.");
   }
@@ -108,7 +107,7 @@ export const receiveWhatsAppMessage = async (req, res, next) => {
 
           await sendWhatsAppMessage(sender, result.response);
         } catch (processingError) {
-          logger.error("Error processing message:", processingError);
+          logger.error("Error processing message: " + processingError);
           await sendWhatsAppMessage(
             sender,
             "I'm sorry, I couldn't process your request. Please try again or rephrase your message."
@@ -124,7 +123,7 @@ export const receiveWhatsAppMessage = async (req, res, next) => {
       200
     );
   } catch (error) {
-    logger.error("Error in WhatsApp webhook handler:", error);
+    logger.error("Error in WhatsApp webhook handler: " + error);
     return responseHandler(res, null, "Webhook received", 200);
   }
 };

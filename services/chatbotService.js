@@ -8,7 +8,7 @@ export const chatbotService = async (taskType, payload) => {
     payload.query
   );
 
-  logger.info("AI response", response);
+  logger.info("AI response: " + response);
 
   return { message: taskType, response: response };
 };

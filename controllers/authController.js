@@ -90,7 +90,7 @@ export const registerUser = async (req, res, next) => {
 
           transporter.sendMail(mailOptions, async (error, info) => {
             if (error) {
-              logger.info("Email Error: ", error);
+              logger.info("Email Error: " + error);
               return next({ statusCode: 400, message: error });
             } else {
               logger.info("Email sent: " + info.response);
@@ -193,7 +193,7 @@ export const loginUser = async (req, res, next) => {
 
             transporter.sendMail(mailOptions, (error, info) => {
               if (error) {
-                logger.info("Email Error: ", error);
+                logger.info("Email Error: " + error);
                 return next({ statusCode: 400, message: error });
               } else {
                 logger.info("Email sent: " + info.response);

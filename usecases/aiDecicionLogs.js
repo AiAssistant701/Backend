@@ -17,6 +17,6 @@ export const logAIDecision = async (
       executionTime,
     });
   } catch (error) {
-    logger.error("Error logging AI decision:", error);
+    logger.error("Error logging AI decision: " + error);
   }
 };

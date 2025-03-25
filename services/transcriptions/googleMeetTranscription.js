@@ -31,7 +31,7 @@ export const transcribeGoogleMeet = async (audioFilePath, userId) => {
 
     return transcription;
   } catch (error) {
-    logger.error("❌ Google Meet Transcription Error:", error.message);
+    logger.error("❌ Google Meet Transcription Error: " + error.message);
     throw new Error("Failed to transcribe Google Meet audio.");
   }
 };

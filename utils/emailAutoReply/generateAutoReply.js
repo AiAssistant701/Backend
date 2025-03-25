@@ -66,7 +66,7 @@ export const generateAutoReply = async (email) => {
     // Final fallback if both methods fail
     return getFallbackResponse(email);
   } catch (error) {
-    logger.error("Error generating auto-reply:", error);
+    logger.error("Error generating auto-reply: " + error);
     return getFallbackResponse(email);
   }
 };

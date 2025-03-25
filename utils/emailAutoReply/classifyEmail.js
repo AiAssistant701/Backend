@@ -179,7 +179,7 @@ export const classifyText = async (text, confidenceThreshold = 0.3) => {
           }
         }
       } catch (error) {
-        logger.error("Error calling Hugging Face API:", error);
+        logger.error("Error calling Hugging Face API: " + error);
       }
     }
 
@@ -191,7 +191,7 @@ export const classifyText = async (text, confidenceThreshold = 0.3) => {
       fallback: bestScore < confidenceThreshold,
     };
   } catch (error) {
-    logger.error("Classification error:", error);
+    logger.error("Classification error: " + error);
     return {
       category: "general inquiry",
       confidence: 0,
@@ -214,7 +214,7 @@ export const classifyPriority = async (text) => {
 
     return response.data.labels[0];
   } catch (error) {
-    logger.error("Priority classification error:", error);
+    logger.error("Priority classification error: " + error);
     return "standard";
   }
 };
@@ -233,7 +233,7 @@ export const shouldAutoReply = async (email) => {
   const classificationText = [subject, body, body].join(" ");
 
   const classification = await classifyText(classificationText);
-  logger.info("classification", classification);
+  logger.info("Classification: " + classification);
   const priority = await classifyPriority(fullText);
 
   // Minimum confidence threshold for auto-replies

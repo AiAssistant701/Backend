@@ -23,6 +23,6 @@ cron.schedule("*/15 * * * *", async () => {
 
     logger.info("✅ Auto-Reply Process Completed.");
   } catch (error) {
-    logger.error("❌ Auto-Reply Cron Job Error:", error.message);
+    logger.error("❌ Auto-Reply Cron Job Error: " + error.message);
   }
 });

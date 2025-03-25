@@ -32,7 +32,7 @@ export const processUserRequest = async ({
   file,
 }) => {
   const taskType = await classifyIntent(prompt);
-  logger.info("taskType", taskType);
+  logger.info("Task Type: " + taskType);
 
   const description = await generateTaskDescription(prompt);
 
@@ -46,7 +46,7 @@ export const processUserRequest = async ({
   const selectedProviderData =
     provider || (await selectBestModelForUser(taskType, userId));
   const selectedProvider = selectedProviderData.selectedModel;
-  logger.info("selectedProvider", selectedProvider);
+  logger.info("Selected Provider: " + selectedProvider);
 
   const payload = await buildPayloadForTask({
     taskType,

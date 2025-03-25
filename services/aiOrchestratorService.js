@@ -3,9 +3,7 @@ import { chatbotService } from "./chatbotService.js";
 import { analyzeFinance } from "./financeService.js";
 import { performMarketResearch } from "./research/marketResearch.js";
 import { handleHealthReminder } from "../utils/cron-jobs/healthReminders.js";
-import {
-  trackProgress,
-} from "./productivityService.js";
+import { trackProgress } from "./productivityService.js";
 import {
   EMAIL_PROVIDERS,
   CALENDAR_PROVIDERS,
@@ -191,9 +189,11 @@ export const aiOrchestrator = async (taskType, payload) => {
       executionTime
     );
 
+    logger.info("Result: " + result);
+
     return result;
   } catch (error) {
-    logger.error("AI Orchestrator Error:", error);
+    logger.error("AI Orchestrator Error: " + error);
     throw error;
   }
 };

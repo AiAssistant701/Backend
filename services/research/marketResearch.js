@@ -63,7 +63,7 @@ export const performMarketResearch = async (payload) => {
       response: summary,
     };
   } catch (error) {
-    logger.error("❌ Market Research Error:", error);
+    logger.error("❌ Market Research Error: " + error);
     throw new Error("Market research failed.", error.message);
   }
 };

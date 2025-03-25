@@ -52,7 +52,7 @@ const classifier = async (text, labels) => {
         }
       }
     } catch (error) {
-      logger.error("Error calling Hugging Face API:", error);
+      logger.error("Error calling Hugging Face API: " + error);
     }
   }
 
@@ -428,7 +428,7 @@ export const classifyIntent = async (text) => {
 //   for (const testCase of testCases) {
 //     const result = await classifyIntent(testCase.prompt);
 //     logger.info(`Prompt: "${testCase.prompt}"`);
-//     logger.info(`Expected: ${testCase.expected}, Got: ${result}`);
+//     logger.info(`Expected: ${testCase.expected} + Got: ${result}`);
 //     logger.info(result === testCase.expected ? "✅ Passed" : "❌ Failed");
 //     logger.info("---");
 //   }
