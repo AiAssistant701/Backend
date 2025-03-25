@@ -12,7 +12,7 @@ cron.schedule("*/15 * * * *", async () => {
   try {
     const users = await getUsersWithEmailAutoReplyOn();
     if (!users.length) {
-      logger.info("⚠️ No users with Google accounts found.");
+      logger.info("⚠️ No user activated email auto reply.");
       return;
     }
 

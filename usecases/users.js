@@ -5,7 +5,7 @@ import User from "../models/User.js";
 // =======================
 export const saveUserTokens = async (googleId, tokens) => {
   const user = await User.findOneAndUpdate(
-    { googleId },
+    { "googleAuth.googleId": googleId },
     { $set: { tokens } },
     { new: true }
   );
@@ -91,7 +91,7 @@ export const createGoogleUser = async (
       googleId: profile.id,
       access_token: access_token,
       refresh_token: refresh_token,
-      expiresAt
+      expiresAt,
     },
     name: profile.displayName,
     email: profile.emails[0].value,
@@ -107,7 +107,10 @@ export const createGoogleUser = async (
 // fetches all users with google id
 // =======================
 export const getAllUsersWithGoogleId = async () => {
-  const users = await User.find({ googleId: { $ne: null } }, "googleId email");
+  const users = await User.find(
+    { "googleAuth.googleId": { $ne: null } },
+    "googleAuth.googleId email"
+  );
 
   return users.map((user) => user.toJSON());
 };
@@ -116,7 +119,10 @@ export const getAllUsersWithGoogleId = async () => {
 // fetches all users with setEmailAutoReply to on
 // =======================
 export const getUsersWithEmailAutoReplyOn = async () => {
-  const users = await User.find({ setEmailAutoReply: "on" }, "googleId email");
+  const users = await User.find(
+    { setEmailAutoReply: "on" },
+    "googleAuth.googleId email"
+  );
 
   return users.map((user) => user.toJSON());
 };
