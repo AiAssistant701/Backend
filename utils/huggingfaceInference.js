@@ -179,7 +179,7 @@ const extractPdfTextWithExternalTool = async (filePath) => {
     try {
       await fs.unlink(textFilePath);
     } catch (unlinkError) {
-      console.warn("Failed to delete temporary text file:", unlinkError);
+      logger.info("Failed to delete temporary text file:", unlinkError);
     }
 
     return textContent;
