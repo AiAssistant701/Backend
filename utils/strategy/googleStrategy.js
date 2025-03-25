@@ -1,3 +1,4 @@
+import logger from "../logger.js";
 import {
   getUserByEmail,
   createGoogleUser,
@@ -59,7 +60,7 @@ export const handleGoogleAuth = async (
       return done(null, user);
     }
   } catch (error) {
-    console.error("Google Auth Error:", error);
+    logger.error("Google Auth Error:", error);
     return done(null, false, { message: "Internal server error" });
   }
 };

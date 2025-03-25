@@ -99,6 +99,13 @@ export const deleteApiKeys = async (req, res, next) => {
 export const fetchUserTaskHistory = async (req, res, next) => {
   try {
     const userId = req.params.userId;
+    if (!userId) {
+      return next({
+        statusCode: 400,
+        message: "Please provide a user ID to fetch task history",
+      });
+    }
+
     const user = await User.findById(userId);
     if (!user) return next({ statusCode: 400, message: "User not found" });
 

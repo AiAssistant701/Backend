@@ -1,4 +1,5 @@
 import axios from "axios";
+import logger from "./logger.js";
 import User from "../models/User.js";
 import { decrypt } from "./crypto.js";
 import {
@@ -211,9 +212,7 @@ export const callAIModel = async (userId, provider, prompt) => {
 
     return aiResponse;
   } catch (error) {
-    console.error(
-      `API Error: ${JSON.stringify(error.response?.data, null, 2)}`
-    );
+    logger.error(`API Error: ${JSON.stringify(error.response?.data, null, 2)}`);
     throw new Error(
       `API call failed for ${provider}: ${
         error.response?.data?.error || error.message

@@ -1,5 +1,6 @@
 import axios from "axios";
 import dotenv from "dotenv";
+import logger from "../logger.js";
 
 dotenv.config();
 
@@ -178,7 +179,7 @@ export const classifyText = async (text, confidenceThreshold = 0.3) => {
           }
         }
       } catch (error) {
-        console.error("Error calling Hugging Face API:", error);
+        logger.error("Error calling Hugging Face API:", error);
       }
     }
 
@@ -190,7 +191,7 @@ export const classifyText = async (text, confidenceThreshold = 0.3) => {
       fallback: bestScore < confidenceThreshold,
     };
   } catch (error) {
-    console.error("Classification error:", error);
+    logger.error("Classification error:", error);
     return {
       category: "general inquiry",
       confidence: 0,
@@ -213,7 +214,7 @@ export const classifyPriority = async (text) => {
 
     return response.data.labels[0];
   } catch (error) {
-    console.error("Priority classification error:", error);
+    logger.error("Priority classification error:", error);
     return "standard";
   }
 };
@@ -232,7 +233,7 @@ export const shouldAutoReply = async (email) => {
   const classificationText = [subject, body, body].join(" ");
 
   const classification = await classifyText(classificationText);
-  console.log("classification", classification);
+  logger.info("classification", classification);
   const priority = await classifyPriority(fullText);
 
   // Minimum confidence threshold for auto-replies
@@ -380,16 +381,16 @@ export const shouldAutoReply = async (email) => {
 // export const analyzeEmail = async (emailData) => {
 //   const result = await shouldAutoReply(emailData);
 
-//   console.log(`Category: ${result.category}`);
-//   console.log(`Should auto-reply: ${result.shouldReply}`);
-//   console.log(`Reason: ${result.reason}`);
-//   console.log(`Priority: ${result.priority}`);
-//   console.log(`Confidence: ${result.confidence.toFixed(2)}`);
+//   logger.info(`Category: ${result.category}`);
+//   logger.info(`Should auto-reply: ${result.shouldReply}`);
+//   logger.info(`Reason: ${result.reason}`);
+//   logger.info(`Priority: ${result.priority}`);
+//   logger.info(`Confidence: ${result.confidence.toFixed(2)}`);
 //   if (result.urgencyAnalysis) {
-//     console.log(
+//     logger.info(
 //       `Urgency score: ${result.urgencyAnalysis.urgencyScore.toFixed(2)}`
 //     );
-//     console.log(
+//     logger.info(
 //       `Business impact: ${result.urgencyAnalysis.containsBusinessImpact}`
 //     );
 //   }
@@ -401,4 +402,4 @@ export const shouldAutoReply = async (email) => {
 //   subject: "System down",
 //   body: "Our entire system is currently down and we can't process customer orders. This is affecting our business operations. We need immediate assistance to restore service.",
 // });
-// console.log(result);
+// logger.info(result);
