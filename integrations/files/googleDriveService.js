@@ -1,5 +1,6 @@
 import fs from "fs";
 import { google } from "googleapis";
+import logger from "../../utils/logger.js";
 import { getUserByGoogleID } from "../../usecases/users.js";
 import { classifyFile } from "../../utils/fileClassifier.js";
 
@@ -9,7 +10,8 @@ import { classifyFile } from "../../utils/fileClassifier.js";
 export const uploadFileToGoogleDrive = async (googleId, filePath, fileName) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user || !user.tokens) throw new Error("No Google authentication found for user.");
+    if (!user || !user.tokens)
+      throw new Error("No Google authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
@@ -41,7 +43,7 @@ export const uploadFileToGoogleDrive = async (googleId, filePath, fileName) => {
 
     return { ...response.data, category };
   } catch (error) {
-    console.error(121, error.message);
+    logger.error(121, error.message);
     throw new Error("Failed to upload file to Google Drive");
   }
 };
@@ -52,7 +54,8 @@ export const uploadFileToGoogleDrive = async (googleId, filePath, fileName) => {
 export const getGoogleDriveFiles = async (googleId, query = "") => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user || !user.tokens) throw new Error("No Google authentication found for user.");
+    if (!user || !user.tokens)
+      throw new Error("No Google authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
@@ -69,7 +72,7 @@ export const getGoogleDriveFiles = async (googleId, query = "") => {
       fields: "files(id, name, webViewLink)",
       spaces: "drive",
     });
-    console.log("response", response.data.files);
+    logger.info("response", response.data.files);
 
     return response.data.files;
   } catch (error) {
@@ -83,7 +86,8 @@ export const getGoogleDriveFiles = async (googleId, query = "") => {
 export const getOrCreateFolder = async (googleId, folderName) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user || !user.tokens) throw new Error("No Google authentication found for user.");
+    if (!user || !user.tokens)
+      throw new Error("No Google authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
@@ -126,7 +130,8 @@ export const getOrCreateFolder = async (googleId, folderName) => {
 export const organizeFilesInDrive = async (googleId) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user || !user.tokens) throw new Error("No Google authentication found for user.");
+    if (!user || !user.tokens)
+      throw new Error("No Google authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,

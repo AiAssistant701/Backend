@@ -1,3 +1,4 @@
+import logger from "./logger.js";
 import { getModelForTask } from "./modelRouter.js";
 import { classifyIntent } from "./intentClassifier.js";
 import { selectBestModelForUser } from "./modelRouter.js";
@@ -31,7 +32,7 @@ export const processUserRequest = async ({
   file,
 }) => {
   const taskType = await classifyIntent(prompt);
-  console.log("taskType", taskType);
+  logger.info("taskType", taskType);
 
   const description = await generateTaskDescription(prompt);
 
@@ -45,7 +46,7 @@ export const processUserRequest = async ({
   const selectedProviderData =
     provider || (await selectBestModelForUser(taskType, userId));
   const selectedProvider = selectedProviderData.selectedModel;
-  console.log("selectedProvider", selectedProvider);
+  logger.info("selectedProvider", selectedProvider);
 
   const payload = await buildPayloadForTask({
     taskType,

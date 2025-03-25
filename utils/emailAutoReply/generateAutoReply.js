@@ -1,6 +1,7 @@
+import dotenv from "dotenv";
+import logger from "../logger.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { pipeline } from "@xenova/transformers";
-import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -49,7 +50,7 @@ export const generateAutoReply = async (email) => {
     }
 
     // Fallback to local model if Gemini AI fails or isn't configured
-    console.log("Falling back to local model...");
+    logger.info("Falling back to local model...");
     const generator = await getLocalModel();
     const result = await generator(prompt, {
       max_length: 200,
@@ -65,7 +66,7 @@ export const generateAutoReply = async (email) => {
     // Final fallback if both methods fail
     return getFallbackResponse(email);
   } catch (error) {
-    console.error("Error generating auto-reply:", error);
+    logger.error("Error generating auto-reply:", error);
     return getFallbackResponse(email);
   }
 };
@@ -101,5 +102,5 @@ const getFallbackResponse = (email) => {
 // };
 
 // generateAutoReply(testEmail)
-//   .then((reply) => console.log(reply))
-//   .catch((error) => console.error(error));
+//   .then((reply) => logger.info(reply))
+//   .catch((error) => logger.error(error));

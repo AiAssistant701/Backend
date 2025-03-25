@@ -1,5 +1,6 @@
 import axios from "axios";
 import dotenv from "dotenv";
+import logger from "./logger.js";
 
 dotenv.config();
 
@@ -51,7 +52,7 @@ const classifier = async (text, labels) => {
         }
       }
     } catch (error) {
-      console.error("Error calling Hugging Face API:", error);
+      logger.error("Error calling Hugging Face API:", error);
     }
   }
 
@@ -426,10 +427,10 @@ export const classifyIntent = async (text) => {
 
 //   for (const testCase of testCases) {
 //     const result = await classifyIntent(testCase.prompt);
-//     console.log(`Prompt: "${testCase.prompt}"`);
-//     console.log(`Expected: ${testCase.expected}, Got: ${result}`);
-//     console.log(result === testCase.expected ? "✅ Passed" : "❌ Failed");
-//     console.log("---");
+//     logger.info(`Prompt: "${testCase.prompt}"`);
+//     logger.info(`Expected: ${testCase.expected}, Got: ${result}`);
+//     logger.info(result === testCase.expected ? "✅ Passed" : "❌ Failed");
+//     logger.info("---");
 //   }
 // }
 

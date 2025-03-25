@@ -1,6 +1,7 @@
-import axios from "axios";
 import fs from "fs";
+import axios from "axios";
 import FormData from "form-data";
+import logger from "../../utils/logger.js";
 import { logAIDecision } from "../../usecases/aiDecicionLogs.js";
 import { saveTranscription } from "../../usecases/transcriptions.js";
 
@@ -47,7 +48,7 @@ export const transcribeWhatsAppAudio = async (audioUrl, userId) => {
 
     return transcription;
   } catch (error) {
-    console.error("❌ WhatsApp Transcription Error:", error.message);
+    logger.error("❌ WhatsApp Transcription Error:", error.message);
     throw new Error("Failed to transcribe WhatsApp audio.");
   }
 };

@@ -1,3 +1,4 @@
+import logger from "./logger.js";
 import {
   OPENAI,
   COHERE,
@@ -302,7 +303,7 @@ export const getModelForTaskWithReasoning = (
   };
 
   if (!availableModels || availableModels.length === 0) {
-    console.warn("No models available - user has not stored any API keys");
+    logger.info("No models available - user has not stored any API keys");
     return response;
   }
 
