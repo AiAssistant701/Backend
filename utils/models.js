@@ -194,7 +194,7 @@ export const callAIModel = async (userId, provider, prompt) => {
     const compressedMetadata = JSON.stringify(metadata);
 
     const metadataSize = Buffer.from(compressedMetadata).length;
-    console.log("Metadata size:", metadataSize);
+    logger.info("Metadata size: " +  metadataSize);
 
     if (metadataSize > 40960) {
       throw new Error("Metadata size exceeds Pinecone limit after compression");

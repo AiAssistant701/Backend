@@ -14,10 +14,6 @@ export const handleMicrosoftAuth = (
   profile,
   done
 ) => {
-  console.log("=== MICROSOFT AUTH HANDLER TRIGGERED ===");
-  console.log("Request query:", req.query);
-  console.log("Request params:", req.params);
-  console.log("Full profile:", JSON.stringify(profile, null, 2));
 
   try {
     if (!profile) {
@@ -33,10 +29,10 @@ export const handleMicrosoftAuth = (
       refreshToken,
     };
 
-    console.log("Processed user:", user);
+    logger.info("Processed user: " + user);
     return done(null, user);
   } catch (error) {
-    console.error("Error in Microsoft auth handler:", error);
+    logger.error("Error in Microsoft auth handler: " + error);
     return done(error, null);
   }
 };

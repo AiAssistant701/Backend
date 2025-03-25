@@ -144,15 +144,15 @@ router.get("/microsoft", (req, res) => {
     })
   }`;
   
-  console.log(`Initiating Microsoft auth with state: ${state}`);
+  logger.info(`Initiating Microsoft auth with state: ${state}`);
   res.redirect(authUrl);
 });
 
 // Callback handler with state verification
 router.get("/microsoft/callback", async (req, res) => {
   try {
-    console.log("Received callback with state:", req.query.state);
-    console.log("Session state:", req.session.microsoftState);
+    logger.info("Received callback with state: " + req.query.state);
+    logger.info("Session state: " + req.session.microsoftState);
 
     // Verify state
     if (!req.query.state || req.query.state !== req.session.microsoftState) {
@@ -167,18 +167,17 @@ router.get("/microsoft/callback", async (req, res) => {
     if (!code) throw new Error('No authorization code received');
 
     const tokens = await getMicrosoftTokens(code);
-    console.log("Token exchange successful");
+    logger.info("Token exchange successful");
 
     const profile = await getMicrosoftProfile(tokens.access_token);
     const user = await getUserByEmail(profile?.mail);
-    console.log("user", user)
     
     const redirectUrl = new URL(process.env.FRONTEND_URL);
     redirectUrl.searchParams.set("microsoft_auth", "success");
     res.redirect(redirectUrl.toString());
 
   } catch (error) {
-    console.error("Microsoft OAuth error:", error);
+    logger.error("Microsoft OAuth error: " + error);
     const errorUrl = new URL(`${process.env.FRONTEND_URL}/auth-error`);
     errorUrl.searchParams.set("code", "microsoft_failure");
     errorUrl.searchParams.set("reason", error.message.includes('state') ? 'state_mismatch' : 'auth_error');
