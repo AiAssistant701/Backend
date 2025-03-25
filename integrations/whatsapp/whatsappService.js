@@ -1,9 +1,9 @@
 import axios from "axios";
 import dotenv from "dotenv";
-import logger from "../utils/logger.js";
-import { getUserByPhoneNumber } from "../usecases/users.js";
-import { processUserRequest } from "../utils/taskProcessor.js";
-import responseHandler from "../middlewares/responseHandler.js";
+import logger from "../../utils/logger.js";
+import { getUserByPhoneNumber } from "../../usecases/users.js";
+import { processUserRequest } from "../../utils/taskProcessor.js";
+import responseHandler from "../../middlewares/responseHandler.js";
 
 dotenv.config();
 

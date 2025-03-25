@@ -1,8 +1,8 @@
 import { google } from "googleapis";
-import { OPENAI, SEND_EMAIL, GEMINI } from "../utils/constants.js";
-import { extractEmail } from "../utils/helpers.js";
-import { getUserByGoogleID } from "../usecases/users.js";
-import { chatbotService } from "../services/chatbotService.js";
+import { OPENAI, SEND_EMAIL, GEMINI } from "../../utils/constants.js";
+import { extractEmail } from "../../utils/helpers.js";
+import { getUserByGoogleID } from "../../usecases/users.js";
+import { chatbotService } from "../../services/chatbotService.js";
 
 // =======================
 // to send email

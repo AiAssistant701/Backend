@@ -4,23 +4,7 @@ import { analyzeFinance } from "./financeService.js";
 import { performMarketResearch } from "./research/marketResearch.js";
 import { handleHealthReminder } from "../utils/cron-jobs/healthReminders.js";
 import {
-  createCalendarEvent,
-  getUpcomingEvents,
-} from "../integrations/googleCalenderService.js";
-import {
-  sendEmail,
-  getUnreadEmails,
-  searchEmails,
-  summarizeUnreadEmails,
-} from "../integrations/gmailService.js";
-import {
-  uploadFileToGoogleDrive,
-  getGoogleDriveFiles,
-  organizeFilesInDrive,
-} from "../integrations/files/googleDriveService.js";
-import {
   trackProgress,
-  provideHealthReminders,
 } from "./productivityService.js";
 import {
   EMAIL_PROVIDERS,

@@ -1,6 +1,6 @@
 import { google } from "googleapis";
-import { getUserByGoogleID } from "../usecases/users.js";
-import { MEETING_SCHEDULING } from "../utils/constants.js";
+import { getUserByGoogleID } from "../../usecases/users.js";
+import { MEETING_SCHEDULING } from "../../utils/constants.js";
 
 // =======================
 // Create a new event in Google Calendar

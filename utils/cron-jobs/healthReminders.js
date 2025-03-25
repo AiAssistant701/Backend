@@ -3,7 +3,7 @@ import cron from "node-cron";
 import { getUserById } from "../../usecases/users.js";
 import HealthReminder from "../../models/HealthReminders.js";
 import { extractTime, extractReminderText } from "../helpers.js";
-import { sendWhatsAppMessage } from "../../integrations/whatsappService.js";
+import { sendWhatsAppMessage } from "../../integrations/whatsapp/whatsappService.js";
 
 export const handleHealthReminder = async (userMessage, userId) => {
   try {

@@ -3,7 +3,7 @@ import { shouldAutoReply } from "./classifyEmail.js";
 import {
   getUnreadEmails,
   sendAutoReply,
-} from "../../integrations/gmailService.js";
+} from "../../integrations/google/gmailService.js";
 import { logAIDecision } from "../../usecases/aiDecicionLogs.js";
 import { generateAutoReply } from "./generateAutoReply.js";
 

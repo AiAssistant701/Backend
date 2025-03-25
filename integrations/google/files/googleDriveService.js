@@ -1,8 +1,8 @@
 import fs from "fs";
 import { google } from "googleapis";
-import logger from "../../utils/logger.js";
-import { getUserByGoogleID } from "../../usecases/users.js";
-import { classifyFile } from "../../utils/fileClassifier.js";
+import logger from "../../../utils/logger.js";
+import { getUserByGoogleID } from "../../../usecases/users.js";
+import { classifyFile } from "../../../utils/fileClassifier.js";
 
 // =======================
 // Uploads a file to Google Drive

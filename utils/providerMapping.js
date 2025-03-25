@@ -3,16 +3,16 @@ import {
   getUnreadEmails,
   searchEmails,
   summarizeUnreadEmails,
-} from "../integrations/gmailService.js";
+} from "../integrations/google/gmailService.js";
 import {
   createCalendarEvent,
   getUpcomingEvents,
-} from "../integrations/googleCalenderService.js";
+} from "../integrations/google/googleCalenderService.js";
 import {
   uploadFileToGoogleDrive,
   getGoogleDriveFiles,
   organizeFilesInDrive,
-} from "../integrations/files/googleDriveService.js";
+} from "../integrations/google/files/googleDriveService.js";
 
 export const EMAIL_PROVIDERS = {
   Gmail: {
@@ -53,24 +53,24 @@ export const FILE_PROVIDERS = {
     getFiles: (payload) => getGoogleDriveFiles(payload.googleId, payload.query),
     organizeFiles: (payload) => organizeFilesInDrive(payload.googleId),
   },
-//   OneDrive: {
-//     uploadFile: (payload) =>
-//       uploadFileToOneDrive(
-//         payload.oneDriveId,
-//         payload.filePath,
-//         payload.fileName
-//       ),
-//     getFiles: (payload) => getOneDriveFiles(payload.oneDriveId, payload.query),
-//     organizeFiles: (payload) => organizeFilesInOneDrive(payload.oneDriveId),
-//   },
-//   Dropbox: {
-//     uploadFile: (payload) =>
-//       uploadFileToDropbox(
-//         payload.dropboxId,
-//         payload.filePath,
-//         payload.fileName
-//       ),
-//     getFiles: (payload) => getDropboxFiles(payload.dropboxId, payload.query),
-//     organizeFiles: (payload) => organizeFilesInDropbox(payload.dropboxId),
-//   },
+  //   OneDrive: {
+  //     uploadFile: (payload) =>
+  //       uploadFileToOneDrive(
+  //         payload.oneDriveId,
+  //         payload.filePath,
+  //         payload.fileName
+  //       ),
+  //     getFiles: (payload) => getOneDriveFiles(payload.oneDriveId, payload.query),
+  //     organizeFiles: (payload) => organizeFilesInOneDrive(payload.oneDriveId),
+  //   },
+  //   Dropbox: {
+  //     uploadFile: (payload) =>
+  //       uploadFileToDropbox(
+  //         payload.dropboxId,
+  //         payload.filePath,
+  //         payload.fileName
+  //       ),
+  //     getFiles: (payload) => getDropboxFiles(payload.dropboxId, payload.query),
+  //     organizeFiles: (payload) => organizeFilesInDropbox(payload.dropboxId),
+  //   },
 };

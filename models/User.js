@@ -51,6 +51,11 @@ const userSchema = new mongoose.Schema(
       access_token: { type: String },
       refresh_token: { type: String },
     },
+    microsoftAuth: {
+      accessToken: String,
+      refreshToken: String,
+      expiresAt: Date,
+    },
     phoneNumberVerified: {
       type: Boolean,
       default: false,

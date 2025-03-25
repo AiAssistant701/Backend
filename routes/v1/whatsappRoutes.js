@@ -5,7 +5,7 @@ import { checkRole } from "../../middlewares/rolesMiddleware.js";
 import {
   verifyWebhook,
   receiveWhatsAppMessage,
-} from "../../integrations/whatsappService.js";
+} from "../../integrations/whatsapp/whatsappService.js";
 
 const router = express.Router();
 

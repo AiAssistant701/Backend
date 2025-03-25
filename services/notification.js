@@ -1,4 +1,4 @@
-import { sendEmail } from "../integrations/gmailService.js";
+import { sendEmail } from "../integrations/google/gmailService.js";
 
 export const sendReminder = (googleId, email, subject, message) => {
   try {

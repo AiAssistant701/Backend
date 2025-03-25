@@ -1,7 +1,7 @@
 import cron from "node-cron";
 import User from "../../models/User.js";
 import Transaction from "../../models/Transaction.js";
-import { sendEmail } from "../../integrations/gmailService.js";
+import { sendEmail } from "../../integrations/google/gmailService.js";
 import { calculateInsights, detectAnomalies } from "../finance.js";
 import { getTransactionsByUserId } from "../../usecases/transactions.js";
 
