@@ -1,4 +1,3 @@
-import axios from "axios";
 import { callAIModel } from "../utils/models.js";
 
 export const chatbotService = async (taskType, payload) => {

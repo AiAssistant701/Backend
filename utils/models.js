@@ -26,7 +26,8 @@ export const callAIModel = async (userId, provider, prompt) => {
     payload,
     headers = { Authorization: `Bearer ${apiKey}` };
 
-  const systemMessage = "You are an AI assistant named YAAS. Answer concisely and professionally.";
+  const systemMessage =
+    "You are an AI assistant named YAAS. Answer concisely and professionally.";
 
   switch (provider) {
     case OPENAI:
@@ -91,10 +92,7 @@ export const callAIModel = async (userId, provider, prompt) => {
       payload = {
         contents: [
           {
-            parts: [
-              { text: systemMessage },
-              { text: prompt },
-            ],
+            parts: [{ text: systemMessage }, { text: prompt }],
           },
         ],
       };
@@ -118,8 +116,14 @@ export const callAIModel = async (userId, provider, prompt) => {
   }
 
   try {
+    const MAX_RESPONSE_SIZE = 20000;
+    const MAX_PROMPT_SIZE = 20000;
+
+    // Truncate the prompt and response to avoid exceeding metadata size limits
+    const truncatedPrompt = prompt.slice(0, MAX_PROMPT_SIZE);
+
     // Retrieve similar past prompts using Pinecone
-    const embedding = await embedText(prompt);
+    const embedding = await embedText(truncatedPrompt);
     const index = pinecone.index(process.env.PINECONE_INDEX);
     const queryResults = await index.query({
       vector: embedding,
@@ -177,16 +181,31 @@ export const callAIModel = async (userId, provider, prompt) => {
       throw new Error(`Invalid response format from ${provider}`);
     }
 
+    // Truncate the response to avoid exceeding metadata size limits
+    const truncatedResponse = aiResponse.slice(0, MAX_RESPONSE_SIZE);
+
+    // Prepare metadata with minimal fields
+    const metadata = {
+      p: truncatedPrompt, // Shortened key for "prompt"
+      r: truncatedResponse, // Shortened key for "response"
+    };
+
+    const compressedMetadata = JSON.stringify(metadata);
+
+    const metadataSize = Buffer.from(compressedMetadata).length;
+    console.log("Metadata size:", metadataSize);
+
+    if (metadataSize > 40960) {
+      throw new Error("Metadata size exceeds Pinecone limit after compression");
+    }
+
     // Store response embedding in Pinecone
-    const responseEmbedding = await embedText(aiResponse);
+    const responseEmbedding = await embedText(truncatedResponse);
     await index.upsert([
       {
         id: `${userId}-${Date.now()}`,
         values: responseEmbedding,
-        metadata: {
-          prompt,
-          response: aiResponse,
-        },
+        metadata: JSON.parse(compressedMetadata),
       },
     ]);
 

@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import { getAllUsersWithGoogleId } from "../../usecases/users.js";
+import { getUsersWithEmailAutoReplyOn } from "../../usecases/users.js";
 import { processAutoReplies } from "../emailAutoReply/emailAutoReply.js";
 
 // =======================
@@ -9,7 +9,7 @@ cron.schedule("*/15 * * * *", async () => {
   console.log("🔄 Running Auto-Reply Cron Job...");
 
   try {
-    const users = await getAllUsersWithGoogleId();
+    const users = await getUsersWithEmailAutoReplyOn();
     if (!users.length) {
       console.log("⚠️ No users with Google accounts found.");
       return;
