@@ -1,8 +1,9 @@
-import dotenv from 'dotenv'
+import dotenv from "dotenv";
 import express from "express";
 import passport from "passport";
 import User from "../../models/User.js";
 import { body } from "express-validator";
+import logger from "../../utils/logger.js";
 import {
   registerUser,
   loginUser,
@@ -12,6 +13,10 @@ import {
   verifyEmail,
   generateToken,
 } from "../../controllers/authController.js";
+import {
+  getMicrosoftAuthUrl,
+  getMicrosoftTokens,
+} from "../../integrations/microsoft/microsoftAuth.js";
 import { passwordRegex } from "../../utils/constants.js";
 import { getUserByGoogleID } from "../../usecases/users.js";
 import verifyToken from "../../middlewares/authMiddleware.js";
@@ -19,7 +24,7 @@ import { checkRole } from "../../middlewares/rolesMiddleware.js";
 import responseHandler from "../../middlewares/responseHandler.js";
 import { sanitizeInput } from "../../middlewares/sanitizeInput.js";
 
-dotenv.config()
+dotenv.config();
 
 const router = express.Router();
 
@@ -113,13 +118,40 @@ router.get(
       const frontendURL = `${process.env.FRONTEND_URL}/user/profile/google-confirmation`;
       return res.redirect(frontendURL);
     } else {
-      const user = await getUserByGoogleID(req.user.googleId);
+      const user = await getUserByGoogleID(req.user.googleAuth.googleId);
       const token = generateToken(user.id);
       const frontendURL = `${process.env.FRONTEND_URL}/auth/callback?token=${token}`;
       return res.redirect(frontendURL);
     }
   }
 );
+
+// =========MICROSOFT SIGN-IN AUTH=============
+router.get("/microsoft", (req, res) => {
+  res.redirect(getMicrosoftAuthUrl());
+});
+
+router.get("/microsoft/callback", async (req, res) => {
+  try {
+    const { code } = req.query;
+    const tokens = await getMicrosoftTokens(code);
+
+    // Save tokens to the user
+    const userId = req.user.id;
+    await User.findByIdAndUpdate(userId, {
+      microsoftAuth: {
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        expiresAt: Date.now() + tokens.expires_in * 1000,
+      },
+    });
+
+    res.redirect(process.env.FRONTEND_URL);
+  } catch (error) {
+    logger.error("Microsoft OAuth error:", error);
+    res.redirect("/error");
+  }
+});
 
 // =========TEST========= Only Admins Can View All Users
 router.get(

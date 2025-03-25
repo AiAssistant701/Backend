@@ -15,7 +15,7 @@ export const handleAIRequest = async (req, res, next) => {
 
     const { result } = await processUserRequest({
       userId: user.id,
-      googleId: user.googleId,
+      googleId: user.googleAuth.googleId,
       prompt,
       provider,
       file: req.file,

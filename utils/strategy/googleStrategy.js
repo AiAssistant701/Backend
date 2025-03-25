@@ -54,8 +54,8 @@ export const handleGoogleAuth = async (
         if (user.hasPassword) {
           return done(null, false, { message: "User is not a Google user" });
         }
-        await saveUserTokens(user.googleId, tokens);
-        user = { googleId: user.googleId, email: user.email, tokens };
+        await saveUserTokens(user.googleAuth.googleId, tokens);
+        user = { googleId: user.googleAuth.googleId, email: user.email, tokens };
       }
       return done(null, user);
     }

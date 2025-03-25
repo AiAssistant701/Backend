@@ -36,7 +36,7 @@ export const handleHealthReminder = async (userMessage, userId) => {
       //   `⏰ Reminder: ${reminderText}`
       // );
       await sendEmail(
-        user?.googleId,
+        user?.googleAuth.googleId,
         user.email,
         "Health Reminder",
         `⏰ Reminder: ${reminderText}`

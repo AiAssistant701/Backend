@@ -18,7 +18,7 @@ cron.schedule("*/15 * * * *", async () => {
 
     for (const user of users) {
       logger.info(`✉️ Processing auto-replies for user: ${user.email}`);
-      await processAutoReplies(user.googleId);
+      await processAutoReplies(user.googleAuth.googleId);
     }
 
     logger.info("✅ Auto-Reply Process Completed.");

@@ -103,7 +103,7 @@ export const receiveWhatsAppMessage = async (req, res, next) => {
           const { result } = await processUserRequest({
             userId: user.id,
             prompt: text,
-            googleId: user.googleId,
+            googleId: user.googleAuth.googleId,
           });
 
           await sendWhatsAppMessage(sender, result.response);

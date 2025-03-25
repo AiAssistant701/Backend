@@ -18,7 +18,7 @@ cron.schedule("0 9 1 * *", async () => {
 
   usersWithoutRecentStatements.forEach((user) => {
     sendReminder(
-      user.googleId,
+      user.googleAuth.googleId,
       user.email,
       "Upload Bank Statement Reminder",
       "It's time to upload your bank statement!"

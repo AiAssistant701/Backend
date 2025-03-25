@@ -14,7 +14,7 @@ cron.schedule("0 8 1 * *", async () => {
     const anomalies = detectAnomalies(transactions);
 
     sendEmail(
-      user.googleId,
+      user.googleAuth.googleId,
       user.email,
       "Monthly Financial Report",
       JSON.stringify({ insights, anomalies }, null, 2)

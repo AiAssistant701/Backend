@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: function () {
-        return !this.googleId;
+        return !this.googleAuth.googleId;
       },
     },
     phoneNumber: {
@@ -41,19 +41,20 @@ const userSchema = new mongoose.Schema(
       index: true,
       sparse: true,
     },
-    googleId: {
-      type: String,
-      unique: true,
-      sparse: true,
-    },
     apiKeys: [apiKeySchema],
-    tokens: {
-      access_token: { type: String },
-      refresh_token: { type: String },
+    googleAuth: {
+      googleId: {
+        type: String,
+        unique: true,
+        sparse: true,
+      },
+      access_token: String,
+      refresh_token: String,
+      expiresAt: Date,
     },
     microsoftAuth: {
-      accessToken: String,
-      refreshToken: String,
+      access_token: String,
+      refresh_token: String,
       expiresAt: Date,
     },
     phoneNumberVerified: {

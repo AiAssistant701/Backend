@@ -18,7 +18,11 @@ export const saveUserTokens = async (googleId, tokens) => {
 // =======================
 export const getUserByGoogleID = async (googleId) => {
   if (!googleId) return null;
-  const user = await User.findOne({ googleId });
+
+  const user = await User.findOne({
+    "googleAuth.googleId": googleId,
+  });
+
   return user ? user.toJSON() : null;
 };
 
@@ -30,13 +34,16 @@ export const updateUserWithTokens = async (email, googleId, tokens) => {
     { email },
     {
       $set: {
-        googleId,
-        "tokens.access_token": tokens.access_token,
-        "tokens.refresh_token": tokens.refresh_token,
+        googleAuth: {
+          googleId,
+          access_token: tokens.access_token,
+          refresh_token: tokens.refresh_token,
+          expiresAt: Date.now() + tokens.expires_in * 1000,
+        },
         emailVerified: true,
       },
     },
-    { new: true }
+    { new: true, upsert: false }
   );
 };
 
@@ -70,16 +77,21 @@ export const getUserByPhoneNumber = async (phoneNumber) => {
 export const createGoogleUser = async (
   profile,
   access_token,
-  refresh_token
+  refresh_token,
+  expires_in = 3600
 ) => {
   const user = await User.create({
-    googleId: profile.id,
+    googleAuth: {
+      googleId: profile.id,
+      access_token: access_token,
+      refresh_token: refresh_token,
+      expiresAt: Date.now() + expires_in * 1000,
+    },
     name: profile.displayName,
     email: profile.emails[0].value,
     firstName: profile.name.givenName,
     lastName: profile.name.familyName,
     emailVerified: true,
-    tokens: { access_token, refresh_token },
   });
 
   return user ? user.toJSON() : null;
