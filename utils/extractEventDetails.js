@@ -1,3 +1,5 @@
+import logger from "./logger.js";
+
 // =======================
 // Extracts event details from natural language input with improved accuracy.
 // =======================
@@ -434,5 +436,5 @@ function capitalize(str) {
 
 // const test1 = "Schedule a meeting tomorrow at 2pm";
 // const result1 = extractEventDetails(test1);
-// console.log("Test 1: Basic meeting tomorrow");
-// console.log(result1);
+// logger.info("Test 1: Basic meeting tomorrow");
+// logger.info(result1);

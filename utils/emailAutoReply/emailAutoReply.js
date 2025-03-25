@@ -1,3 +1,4 @@
+import logger from "../logger.js";
 import { shouldAutoReply } from "./classifyEmail.js";
 import {
   getUnreadEmails,
@@ -17,13 +18,13 @@ export const processAutoReplies = async (googleId) => {
 
     for (const email of unreadEmailsResponse) {
       const needsReply = await shouldAutoReply(email);
-      console.log(
+      logger.info(
         `Email from ${email.from} needs reply: ${needsReply.shouldReply}`
       );
       if (!needsReply) continue;
 
       const replyMessage = await generateAutoReply(email);
-      console.log(
+      logger.info(
         `Auto-reply generated for email from ${email.from}: ${replyMessage}`
       );
       await sendAutoReply(googleId, email, replyMessage);

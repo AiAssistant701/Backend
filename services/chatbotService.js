@@ -1,3 +1,4 @@
+import logger from "../utils/logger.js";
 import { callAIModel } from "../utils/models.js";
 
 export const chatbotService = async (taskType, payload) => {
@@ -7,7 +8,7 @@ export const chatbotService = async (taskType, payload) => {
     payload.query
   );
 
-  console.log("AI response", response);
+  logger.info("AI response", response);
 
   return { message: taskType, response: response };
 };

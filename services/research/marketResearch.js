@@ -1,5 +1,6 @@
 import axios from "axios";
 import dotenv from "dotenv";
+import logger from "../../utils/logger.js";
 import { MARKET_RESEARCH } from "../../utils/constants.js";
 import { chatbotService } from "../chatbotService.js";
 import { saveMarketResearch } from "../../usecases/markets.js";
@@ -62,7 +63,7 @@ export const performMarketResearch = async (payload) => {
       response: summary,
     };
   } catch (error) {
-    console.error("❌ Market Research Error:", error);
+    logger.error("❌ Market Research Error:", error);
     throw new Error("Market research failed.", error.message);
   }
 };

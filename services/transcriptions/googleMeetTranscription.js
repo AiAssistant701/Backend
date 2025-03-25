@@ -1,5 +1,6 @@
-import speech from "@google-cloud/speech";
 import fs from "fs";
+import speech from "@google-cloud/speech";
+import logger from "../../utils/logger.js";
 import { saveTranscription } from "../../usecases/transcriptions.js";
 
 const client = new speech.SpeechClient();
@@ -21,14 +22,16 @@ export const transcribeGoogleMeet = async (audioFilePath, userId) => {
     };
 
     const [response] = await client.recognize(request);
-    const transcription = response.results.map((result) => result.alternatives[0].transcript).join("\n");
+    const transcription = response.results
+      .map((result) => result.alternatives[0].transcript)
+      .join("\n");
 
     // Save transcription in MongoDB
     await saveTranscription(userId, transcription, "google_meet");
 
     return transcription;
   } catch (error) {
-    console.error("❌ Google Meet Transcription Error:", error.message);
+    logger.error("❌ Google Meet Transcription Error:", error.message);
     throw new Error("Failed to transcribe Google Meet audio.");
   }
 };

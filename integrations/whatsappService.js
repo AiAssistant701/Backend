@@ -1,5 +1,6 @@
 import axios from "axios";
 import dotenv from "dotenv";
+import logger from "../utils/logger.js";
 import { getUserByPhoneNumber } from "../usecases/users.js";
 import { processUserRequest } from "../utils/taskProcessor.js";
 import responseHandler from "../middlewares/responseHandler.js";
@@ -33,7 +34,7 @@ export const sendWhatsAppMessage = async (recipient, message) => {
     );
     return response.data;
   } catch (error) {
-    console.error(
+    logger.error(
       "Error sending WhatsApp message:",
       error.response?.data || error.message
     );
@@ -50,7 +51,7 @@ export const verifyWebhook = (req, res) => {
   const challenge = req.query["hub.challenge"];
 
   if (mode === "subscribe" && token === VERIFY_TOKEN) {
-    console.log("Webhook verified successfully.");
+    logger.info("Webhook verified successfully.");
     res.status(200).send(challenge);
   } else {
     responseHandler(res, null, "Verification failed.", 403);
@@ -82,7 +83,7 @@ export const receiveWhatsAppMessage = async (req, res, next) => {
         const sender = message.from;
         const text = message.text?.body || "";
 
-        console.log(`Received WhatsApp message from ${sender}: ${text}`);
+        logger.info(`Received WhatsApp message from ${sender}: ${text}`);
 
         const user = await getUserByPhoneNumber(sender);
         if (!user) {
@@ -102,12 +103,12 @@ export const receiveWhatsAppMessage = async (req, res, next) => {
           const { result } = await processUserRequest({
             userId: user.id,
             prompt: text,
-            googleId: user.googleId
+            googleId: user.googleId,
           });
 
           await sendWhatsAppMessage(sender, result.response);
         } catch (processingError) {
-          console.error("Error processing message:", processingError);
+          logger.error("Error processing message:", processingError);
           await sendWhatsAppMessage(
             sender,
             "I'm sorry, I couldn't process your request. Please try again or rephrase your message."
@@ -123,7 +124,7 @@ export const receiveWhatsAppMessage = async (req, res, next) => {
       200
     );
   } catch (error) {
-    console.error("Error in WhatsApp webhook handler:", error);
+    logger.error("Error in WhatsApp webhook handler:", error);
     return responseHandler(res, null, "Webhook received", 200);
   }
 };
