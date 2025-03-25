@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import express from "express";
 import passport from "passport";
-import crypto from 'crypto'
+import crypto from "crypto";
 import User from "../../models/User.js";
 import { body } from "express-validator";
 import logger from "../../utils/logger.js";
@@ -130,20 +130,20 @@ router.get(
 
 // =========MICROSOFT SIGN-IN AUTH=============
 router.get("/microsoft", (req, res) => {
-  const state = crypto.randomBytes(16).toString('hex');
+  const state = crypto.randomBytes(16).toString("hex");
   req.session.microsoftState = state;
-  
-  const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?${
-    new URLSearchParams({
+
+  const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?${new URLSearchParams(
+    {
       client_id: process.env.MICROSOFT_CLIENT_ID,
-      response_type: 'code',
+      response_type: "code",
       redirect_uri: process.env.MICROSOFT_REDIRECT_URI,
-      scope: 'User.Read',
+      scope: "User.Read Mail.ReadWrite Files.ReadWrite.All",
       state: state,
-      prompt: 'select_account'
-    })
-  }`;
-  
+      prompt: "select_account",
+    }
+  )}`;
+
   logger.info(`Initiating Microsoft auth with state: ${state}`);
   res.redirect(authUrl);
 });
@@ -156,7 +156,7 @@ router.get("/microsoft/callback", async (req, res) => {
 
     // Verify state
     if (!req.query.state || req.query.state !== req.session.microsoftState) {
-      throw new Error('State verification failed');
+      throw new Error("State verification failed");
     }
 
     // Clear the state after verification
@@ -164,23 +164,26 @@ router.get("/microsoft/callback", async (req, res) => {
 
     // Handle the OAuth code
     const { code } = req.query;
-    if (!code) throw new Error('No authorization code received');
+    if (!code) throw new Error("No authorization code received");
 
     const tokens = await getMicrosoftTokens(code);
+    console.log(333, tokens);
     logger.info("Token exchange successful");
 
     const profile = await getMicrosoftProfile(tokens.access_token);
     const user = await getUserByEmail(profile?.mail);
-    
+
     const redirectUrl = new URL(process.env.FRONTEND_URL);
     redirectUrl.searchParams.set("microsoft_auth", "success");
     res.redirect(redirectUrl.toString());
-
   } catch (error) {
     logger.error("Microsoft OAuth error: " + error);
     const errorUrl = new URL(`${process.env.FRONTEND_URL}/auth-error`);
     errorUrl.searchParams.set("code", "microsoft_failure");
-    errorUrl.searchParams.set("reason", error.message.includes('state') ? 'state_mismatch' : 'auth_error');
+    errorUrl.searchParams.set(
+      "reason",
+      error.message.includes("state") ? "state_mismatch" : "auth_error"
+    );
     res.redirect(errorUrl.toString());
   }
 });

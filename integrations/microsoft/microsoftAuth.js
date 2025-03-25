@@ -2,7 +2,7 @@ import qs from "qs";
 import axios from "axios";
 import logger from "../../utils/logger.js";
 
-export function getMicrosoftAuthUrl(state) {
+export const getMicrosoftAuthUrl = (state) => {
   return `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?${new URLSearchParams(
     {
       client_id: process.env.MICROSOFT_CLIENT_ID,
@@ -13,9 +13,9 @@ export function getMicrosoftAuthUrl(state) {
       prompt: "select_account",
     }
   )}`;
-}
+};
 
-export async function getMicrosoftTokens(code) {
+export const getMicrosoftTokens = async (code) => {
   const response = await axios.post(
     "https://login.microsoftonline.com/common/oauth2/v2.0/token",
     new URLSearchParams({
@@ -28,11 +28,11 @@ export async function getMicrosoftTokens(code) {
     { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
   );
   return response.data;
-}
+};
 
-export async function getMicrosoftProfile(accessToken) {
+export const getMicrosoftProfile = async (accessToken) => {
   const response = await axios.get("https://graph.microsoft.com/v1.0/me", {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   return response.data;
-}
+};
