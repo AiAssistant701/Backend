@@ -1,9 +1,11 @@
 import dotenv from "dotenv";
 import express from "express";
 import passport from "passport";
+import crypto from 'crypto'
 import User from "../../models/User.js";
 import { body } from "express-validator";
 import logger from "../../utils/logger.js";
+import { getUserByEmail } from "../../usecases/users.js";
 import {
   registerUser,
   loginUser,
@@ -14,7 +16,7 @@ import {
   generateToken,
 } from "../../controllers/authController.js";
 import {
-  getMicrosoftAuthUrl,
+  getMicrosoftProfile,
   getMicrosoftTokens,
 } from "../../integrations/microsoft/microsoftAuth.js";
 import { passwordRegex } from "../../utils/constants.js";
@@ -128,28 +130,59 @@ router.get(
 
 // =========MICROSOFT SIGN-IN AUTH=============
 router.get("/microsoft", (req, res) => {
-  res.redirect(getMicrosoftAuthUrl());
+  const state = crypto.randomBytes(16).toString('hex');
+  req.session.microsoftState = state;
+  
+  const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?${
+    new URLSearchParams({
+      client_id: process.env.MICROSOFT_CLIENT_ID,
+      response_type: 'code',
+      redirect_uri: process.env.MICROSOFT_REDIRECT_URI,
+      scope: 'User.Read',
+      state: state,
+      prompt: 'select_account'
+    })
+  }`;
+  
+  console.log(`Initiating Microsoft auth with state: ${state}`);
+  res.redirect(authUrl);
 });
 
+// Callback handler with state verification
 router.get("/microsoft/callback", async (req, res) => {
   try {
+    console.log("Received callback with state:", req.query.state);
+    console.log("Session state:", req.session.microsoftState);
+
+    // Verify state
+    if (!req.query.state || req.query.state !== req.session.microsoftState) {
+      throw new Error('State verification failed');
+    }
+
+    // Clear the state after verification
+    delete req.session.microsoftState;
+
+    // Handle the OAuth code
     const { code } = req.query;
+    if (!code) throw new Error('No authorization code received');
+
     const tokens = await getMicrosoftTokens(code);
+    console.log("Token exchange successful");
 
-    // Save tokens to the user
-    const userId = req.user.id;
-    await User.findByIdAndUpdate(userId, {
-      microsoftAuth: {
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        expiresAt: Date.now() + tokens.expires_in * 1000,
-      },
-    });
+    const profile = await getMicrosoftProfile(tokens.access_token);
+    const user = await getUserByEmail(profile?.mail);
+    console.log("user", user)
+    
+    const redirectUrl = new URL(process.env.FRONTEND_URL);
+    redirectUrl.searchParams.set("microsoft_auth", "success");
+    res.redirect(redirectUrl.toString());
 
-    res.redirect(process.env.FRONTEND_URL);
   } catch (error) {
-    logger.error("Microsoft OAuth error: " + error);
-    res.redirect("/error");
+    console.error("Microsoft OAuth error:", error);
+    const errorUrl = new URL(`${process.env.FRONTEND_URL}/auth-error`);
+    errorUrl.searchParams.set("code", "microsoft_failure");
+    errorUrl.searchParams.set("reason", error.message.includes('state') ? 'state_mismatch' : 'auth_error');
+    res.redirect(errorUrl.toString());
   }
 });
 

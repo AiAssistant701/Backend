@@ -10,10 +10,6 @@ const subagentConfigSchema = new mongoose.Schema({
     type: String,
     required: true,
   }, // send_email
-  provider: {
-    type: String,
-    required: true,
-  },
   config: {
     type: Object,
     required: true,

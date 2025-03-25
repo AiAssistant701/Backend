@@ -9,6 +9,7 @@ import session from "express-session";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
+import { Strategy as MicrosoftStrategy } from "passport-microsoft";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
 // Internal Imports
@@ -19,7 +20,11 @@ import {
   googleStrategyConfig,
   handleGoogleAuth,
 } from "./utils/strategy/googleStrategy.js";
-import './utils/cron-jobs/emailAutoReply.js'
+import {
+  microsoftStrategyConfig,
+  handleMicrosoftAuth,
+} from "./utils/strategy/microsoftStrategy.js";
+import "./utils/cron-jobs/emailAutoReply.js";
 
 dotenv.config();
 
@@ -69,9 +74,11 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // Session Configuration
+const sessionStore = new session.MemoryStore();
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
+    store: sessionStore,
     resave: false,
     saveUninitialized: false,
   })
@@ -83,8 +90,9 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Google OAuth Strategy
+// Google & Microsoft OAuth Strategy
 passport.use(new GoogleStrategy(googleStrategyConfig, handleGoogleAuth));
+passport.use(new MicrosoftStrategy(microsoftStrategyConfig, handleMicrosoftAuth));
 
 // Serialize and Deserialize User
 passport.serializeUser((user, done) => {
@@ -95,9 +103,15 @@ passport.deserializeUser((user, done) => {
   done(null, user);
 });
 
-// ========GOOGLE LOGIN TEST=========
-app.get("/", (req, res) => {
-  res.send("<a href='/api/v1/auth/google?intent=connect'>Login with Google</a>");
+// ========GOOGLE & MICROSOFT LOGIN TEST=========
+app.get("/google", (req, res) => {
+  res.send(
+    "<a href='/api/v1/auth/google?intent=connect'>Login with Google</a>"
+  );
+});
+
+app.get("/microsoft", (req, res) => {
+  res.send("<a href='/api/v1/auth/microsoft'>Login with Microsoft</a>");
 });
 
 // ======================
