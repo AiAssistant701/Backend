@@ -47,6 +47,7 @@ export const aiOrchestrator = async (taskType, payload) => {
       case SEARCH_EMAILS:
       case SUMMARIZE_EMAILS:
         modelUsed = `${provider} API`;
+        logger.info("Provider Used: " + modelUsed);
         reasoning = `Using ${provider} API for email-related tasks.`;
         const emailService = EMAIL_PROVIDERS[provider];
         if (!emailService) {
@@ -75,6 +76,7 @@ export const aiOrchestrator = async (taskType, payload) => {
       case MEETING_SCHEDULING:
       case FETCH_UPCOMING_EVENTS:
         modelUsed = `${provider} API`;
+        logger.info("Provider Used: " + modelUsed);
         reasoning = `Using ${provider} API for calendar-related tasks.`;
         const calendarService = CALENDAR_PROVIDERS[provider];
         if (!calendarService) {
@@ -96,6 +98,7 @@ export const aiOrchestrator = async (taskType, payload) => {
       case FILE_RETRIEVAL:
       case ORGANIZE_FILES:
         modelUsed = `${provider} API`;
+        logger.info("Provider Used: " + modelUsed);
         reasoning = `Using ${provider} API for file-related tasks.`;
         const fileService = FILE_PROVIDERS[provider];
         if (!fileService) {
