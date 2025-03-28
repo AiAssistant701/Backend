@@ -5,15 +5,20 @@ export const uploadFileToOneDrive = async (
   fileName,
   fileContent
 ) => {
-  const response = await axios.put(
-    `https://graph.microsoft.com/v1.0/me/drive/root:/${fileName}:/content`,
-    fileContent,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/octet-stream",
-      },
-    }
-  );
-  return response.data;
+  try {
+    const response = await axios.put(
+      `https://graph.microsoft.com/v1.0/me/drive/root:/${fileName}:/content`,
+      fileContent,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/octet-stream",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading file to OneDrive:", error.message);
+    throw new Error("Failed to upload file to OneDrive.");
+  }
 };
