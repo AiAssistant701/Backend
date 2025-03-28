@@ -1,4 +1,5 @@
 import axios from "axios";
+import logger from "../../utils/logger.js";
 
 export const uploadFileToOneDrive = async (
   accessToken,
@@ -18,7 +19,7 @@ export const uploadFileToOneDrive = async (
     );
     return response.data;
   } catch (error) {
-    console.error("Error uploading file to OneDrive:", error.message);
+    logger.error("Error uploading file to OneDrive: " + error.message);
     throw new Error("Failed to upload file to OneDrive.");
   }
 };

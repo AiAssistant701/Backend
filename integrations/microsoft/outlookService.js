@@ -1,4 +1,5 @@
 import axios from "axios";
+import logger from "../../utils/logger.js";
 
 export const sendOutlookEmail = async (accessToken, to, subject, message) => {
   try {
@@ -29,7 +30,7 @@ export const sendOutlookEmail = async (accessToken, to, subject, message) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Error sending email:", error.message);
+    logger.error("Error sending email: " + error.message);
     throw new Error("Failed to send email. Please try again later.");
   }
 };
@@ -42,7 +43,7 @@ export const getOutlookUnreadEmails = async ({ microsoftToken }) => {
     );
     return response.data.value;
   } catch (error) {
-    console.error("Error fetching unread emails:", error.message);
+    logger.error("Error fetching unread emails: " + error.message);
     throw new Error("Failed to fetch unread emails. Please try again later.");
   }
 };
