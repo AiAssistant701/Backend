@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import { getUserById } from "../usecases/users.js";
 import { encrypt, decrypt } from "../utils/crypto.js";
 import { getUserTaskHistory } from "../usecases/taskHistory.js";
 import responseHandler from "../middlewares/responseHandler.js";
@@ -7,13 +8,36 @@ import responseHandler from "../middlewares/responseHandler.js";
 // @desc    Gets a user's profile
 export const fetchUserProfile = async (req, res, next) => {
   try {
-    const user = await User.findById(req.params.userId);
+    const userId = req.params.userId
+    const user = await getUserById(userId);
     if (!user) return next({ statusCode: 400, message: "User not found" });
+
+    if (userId !== req.user.id.toString()) {
+      return next({
+        statusCode: 403,
+        message: "You are not authorized to update this user's profile",
+      });
+    }
+
+    let isGoogleConnected = false;
+
+    if (user.tokens.access_token) {
+      try {
+        const response = await axios.get(
+          `https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${user.tokens.access_token}`
+        );
+
+        isGoogleConnected = response.data && response.data.expires_in > 0;
+      } catch (error) {
+        isGoogleConnected = false;
+      }
+    }
 
     const profile = {
       name: user.name,
       email: user.email,
       phoneNumber: user.phoneNumber,
+      isGoogleConnected,
     };
 
     responseHandler(res, profile, "User profile retrieved!");
