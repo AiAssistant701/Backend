@@ -92,13 +92,16 @@ export const getApiKeys = async (req, res, next) => {
 // @desc    Updates a user's api keys
 export const updateApiKeys = async (req, res, next) => {
   try {
-    const { userId, provider, newKey } = req.body;
-    const encryptedKey = crypto.encrypt(newKey);
+    const { userId, apiKeys } = req.body; // apiKeys = [{ provider, key }]
 
-    await User.updateOne(
-      { _id: userId, "apiKeys.provider": provider },
-      { $set: { "apiKeys.$.key": encryptedKey } }
-    );
+    const encryptedKeys = apiKeys.map(({ provider, key }) => ({
+      provider: provider.toLowerCase(),
+      key: encrypt(key),
+    }));
+
+    await User.findByIdAndUpdate(userId, {
+      $push: { apiKeys: { $each: encryptedKeys } },
+    });
 
     responseHandler(res, null, "API Key updated successfully!");
   } catch (error) {
