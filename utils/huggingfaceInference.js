@@ -1,5 +1,6 @@
 import path from "path";
 import fs from "fs/promises";
+import logger from "./logger.js";
 import { promisify } from "util";
 import { exec } from "child_process";
 import pdfParse from "pdf-parse/lib/pdf-parse.js";
@@ -41,7 +42,7 @@ export const analyzeStatement = async (filePath, userId) => {
       );
     }
   } catch (error) {
-    console.error("Error analyzing statement:", error);
+    logger.error("Error analyzing statement:", error);
     throw new Error("Failed to analyze statement: " + error.message);
   }
 };
@@ -60,9 +61,9 @@ export const analyzePdfStatement = async (filePath, userId) => {
     try {
       const pdfData = await pdfParse(buffer);
       textContent = pdfData.text;
-      console.log("Successfully parsed PDF with pdf-parse");
+      logger.info("Successfully parsed PDF with pdf-parse");
     } catch (error) {
-      console.error("Primary PDF parsing error:", error);
+      logger.error("Primary PDF parsing error:", error);
       parsingError = error;
     }
 
@@ -70,9 +71,9 @@ export const analyzePdfStatement = async (filePath, userId) => {
     if (!textContent) {
       try {
         textContent = await extractPdfTextWithPdfJs(buffer);
-        console.log("Successfully parsed PDF with pdf.js fallback");
+        logger.info("Successfully parsed PDF with pdf.js fallback");
       } catch (fallbackError) {
-        console.error("Fallback PDF.js parsing error:", fallbackError);
+        logger.error("Fallback PDF.js parsing error:", fallbackError);
       }
     }
 
@@ -80,21 +81,21 @@ export const analyzePdfStatement = async (filePath, userId) => {
     if (!textContent) {
       try {
         textContent = await extractPdfTextWithExternalTool(filePath);
-        console.log("Successfully parsed PDF with external tool");
+        logger.info("Successfully parsed PDF with external tool");
       } catch (externalToolError) {
-        console.error("External tool parsing error:", externalToolError);
+        logger.error("External tool parsing error:", externalToolError);
       }
     }
 
     // If all methods failed, throw an appropriate error
     if (!textContent) {
-      console.error("All PDF parsing methods failed for file:", filePath);
+      logger.error("All PDF parsing methods failed for file:", filePath);
       throw new Error(
         "Unable to extract text from the PDF. The file may be corrupted, password-protected, or in an unsupported format. Please try a CSV export instead."
       );
     }
 
-    console.log(
+    logger.info(
       "Extracted text from PDF (sample):",
       textContent.substring(0, 200) + "..."
     );
@@ -114,7 +115,7 @@ export const analyzePdfStatement = async (filePath, userId) => {
 
     return transactions;
   } catch (error) {
-    console.error("Error analyzing PDF statement:", error);
+    logger.error("Error analyzing PDF statement:", error);
     throw error;
   }
 };
@@ -146,7 +147,7 @@ const extractPdfTextWithPdfJs = async (buffer) => {
     
     return fullText;
   } catch (error) {
-    console.error("PDF.js extraction failed:", error);
+    logger.error("PDF.js extraction failed:", error);
     throw error;
   }
   */
@@ -178,12 +179,12 @@ const extractPdfTextWithExternalTool = async (filePath) => {
     try {
       await fs.unlink(textFilePath);
     } catch (unlinkError) {
-      console.warn("Failed to delete temporary text file:", unlinkError);
+      logger.info("Failed to delete temporary text file:", unlinkError);
     }
 
     return textContent;
   } catch (error) {
-    console.error("External tool extraction failed:", error);
+    logger.error("External tool extraction failed:", error);
     throw error;
   }
 };
@@ -211,7 +212,7 @@ export const analyzeCsvStatement = async (filePath, userId) => {
 
     return transactions;
   } catch (error) {
-    console.error("Error analyzing CSV statement:", error);
+    logger.error("Error analyzing CSV statement:", error);
     throw new Error("Failed to analyze CSV statement: " + error.message);
   }
 };
@@ -255,7 +256,7 @@ const parseCsvToTransactions = (csvContent, userId) => {
 
   // If we can't find the columns automatically, try to guess based on content
   if (dateIndex === -1 || descriptionIndex === -1 || amountIndex === -1) {
-    console.log(
+    logger.info(
       "CSV columns not clearly identified, attempting to guess based on content..."
     );
 
@@ -280,7 +281,7 @@ const parseCsvToTransactions = (csvContent, userId) => {
 
           if (hasDatePattern) {
             dateIndex = i;
-            console.log(`Guessed date column at index ${i}`);
+            logger.info(`Guessed date column at index ${i}`);
           }
         }
 
@@ -294,7 +295,7 @@ const parseCsvToTransactions = (csvContent, userId) => {
 
           if (hasAmountPattern) {
             amountIndex = i;
-            console.log(`Guessed amount column at index ${i}`);
+            logger.info(`Guessed amount column at index ${i}`);
           }
         }
       }
@@ -319,7 +320,7 @@ const parseCsvToTransactions = (csvContent, userId) => {
 
         if (likelyDescCol !== -1) {
           descriptionIndex = likelyDescCol;
-          console.log(`Guessed description column at index ${likelyDescCol}`);
+          logger.info(`Guessed description column at index ${likelyDescCol}`);
         }
       }
     }
@@ -337,14 +338,14 @@ const parseCsvToTransactions = (csvContent, userId) => {
     for (let i = 0; i < header.length; i++) {
       if (i !== dateIndex && i !== amountIndex) {
         descriptionIndex = i;
-        console.log(`Using column ${i} for description as fallback`);
+        logger.info(`Using column ${i} for description as fallback`);
         break;
       }
     }
 
     // If we still don't have a description column, use a placeholder
     if (descriptionIndex === -1) {
-      console.log("No suitable description column found, using placeholder");
+      logger.info("No suitable description column found, using placeholder");
     }
   }
 
@@ -703,7 +704,7 @@ export const categorizeTransactions = async (transactions) => {
     });
 
     // Log the response for debugging
-    console.log("Text classification response:", response);
+    logger.info("Text classification response:", response);
 
     // Validate the response format
     if (
@@ -722,7 +723,7 @@ export const categorizeTransactions = async (transactions) => {
 
     return categorizedTransactions;
   } catch (error) {
-    console.error("Error categorizing transactions:", error);
+    logger.error("Error categorizing transactions:", error);
     return transactions.map((t) => ({
       ...t,
       category: "Uncategorized",

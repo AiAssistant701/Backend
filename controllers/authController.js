@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import logger from "../utils/logger.js";
 import { transporter } from "../config/emailTransport.js";
 import { validationResult } from "express-validator";
 import responseHandler from "../middlewares/responseHandler.js";
@@ -89,10 +90,10 @@ export const registerUser = async (req, res, next) => {
 
           transporter.sendMail(mailOptions, async (error, info) => {
             if (error) {
-              console.log("Email Error: ", error);
+              logger.info("Email Error: ", error);
               return next({ statusCode: 400, message: error });
             } else {
-              console.log("Email sent: " + info.response);
+              logger.info("Email sent: " + info.response);
               await User.findOneAndUpdate(
                 { email },
                 { $set: { lastVerificationEmailSent: new Date() } },
@@ -192,10 +193,10 @@ export const loginUser = async (req, res, next) => {
 
             transporter.sendMail(mailOptions, (error, info) => {
               if (error) {
-                console.log("Email Error: ", error);
+                logger.info("Email Error: ", error);
                 return next({ statusCode: 400, message: error });
               } else {
-                console.log("Email sent: " + info.response);
+                logger.info("Email sent: " + info.response);
               }
             });
           }

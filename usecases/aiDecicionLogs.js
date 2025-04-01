@@ -1,3 +1,4 @@
+import logger from "../utils/logger.js";
 import AIDecisionLog from "../models/AIDecisionLogs.js";
 
 export const logAIDecision = async (
@@ -16,6 +17,6 @@ export const logAIDecision = async (
       executionTime,
     });
   } catch (error) {
-    console.error("Error logging AI decision:", error);
+    logger.error("Error logging AI decision:", error);
   }
 };

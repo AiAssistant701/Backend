@@ -1,3 +1,4 @@
+import logger from "../utils/logger.js";
 import { chatbotService } from "./chatbotService.js";
 import { analyzeFinance } from "./financeService.js";
 import { performMarketResearch } from "./research/marketResearch.js";
@@ -198,7 +199,7 @@ export const aiOrchestrator = async (taskType, payload) => {
 
     return result;
   } catch (error) {
-    console.error("AI Orchestrator Error:", error);
+    logger.error("AI Orchestrator Error:", error);
     throw error;
   }
 };
