@@ -1,4 +1,6 @@
+import axios from "axios";
 import User from "../models/User.js";
+import logger from "../utils/logger.js";
 import { encrypt, decrypt } from "../utils/crypto.js";
 import { getUserTaskHistory } from "../usecases/taskHistory.js";
 import responseHandler from "../middlewares/responseHandler.js";
@@ -29,6 +31,7 @@ export const fetchUserProfile = async (req, res, next) => {
 
         isGoogleConnected = response.data && response.data.expires_in > 0;
       } catch (error) {
+        logger.error("Error fetching Google token info: " + error.message);
         isGoogleConnected = false;
       }
     }
