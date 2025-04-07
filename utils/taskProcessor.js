@@ -31,8 +31,8 @@ export const processUserRequest = async ({
   googleId,
   file,
 }) => {
-  const taskType = await classifyIntent(prompt);
-  logger.info("taskType", taskType);
+  const taskType = "search_emails";
+  logger.info("taskType: " + taskType);
 
   const description = await generateTaskDescription(prompt);
 
@@ -46,7 +46,7 @@ export const processUserRequest = async ({
   const selectedProviderData =
     provider || (await selectBestModelForUser(taskType, userId));
   const selectedProvider = selectedProviderData.selectedModel;
-  logger.info("selectedProvider", selectedProvider);
+  logger.info("selectedProvider: " + selectedProvider);
 
   const payload = await buildPayloadForTask({
     taskType,

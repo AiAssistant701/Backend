@@ -1,8 +1,9 @@
 import { google } from "googleapis";
-import { OPENAI, SEND_EMAIL, GEMINI } from "../utils/constants.js";
+import logger from "../utils/logger.js";
 import { extractEmail } from "../utils/helpers.js";
 import { getUserByGoogleID } from "../usecases/users.js";
 import { chatbotService } from "../services/chatbotService.js";
+import { OPENAI, SEND_EMAIL, GEMINI } from "../utils/constants.js";
 
 // =======================
 // to send email
@@ -10,11 +11,11 @@ import { chatbotService } from "../services/chatbotService.js";
 export const sendEmail = async (googleId, to, subject, message) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user || !user.tokens) throw new Error("No Gmail authentication found for user.");
+    if (!user || !user.tokens)
+      throw new Error("No Gmail authentication found for user.");
 
     if (message.toLowerCase().startsWith("about")) {
-      let template = 
-      `Generate a professional email ${message}. Do NOT use placeholders like [Your Name] or [Recipient Name]. If a value is unknown, omit it instead. 
+      let template = `Generate a professional email ${message}. Do NOT use placeholders like [Your Name] or [Recipient Name]. If a value is unknown, omit it instead. 
       Use ${user.name} as the sender's name and break the email ${to} into reasonable first name or last name or both and use the most reasonable one as the recipient name. 
       Do NOT include any additional information not included in the message. 
       Do NOT include a subject`;
@@ -70,7 +71,8 @@ export const sendEmail = async (googleId, to, subject, message) => {
 export const getUnreadEmails = async (googleId) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user || !user.tokens) throw new Error("No Gmail authentication found for user.");
+    if (!user || !user.tokens)
+      throw new Error("No Gmail authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
@@ -100,7 +102,8 @@ export const getUnreadEmails = async (googleId) => {
 export const searchEmails = async (googleId, query) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user || !user.tokens) throw new Error("No Gmail authentication found for user.");
+    if (!user || !user.tokens)
+      throw new Error("No Gmail authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
@@ -110,6 +113,12 @@ export const searchEmails = async (googleId, query) => {
     oauth2Client.setCredentials(user.tokens);
 
     const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+
+    const aboutIndex = query.toLowerCase().indexOf("about");
+    if (aboutIndex !== -1) {
+      const aboutWord = query.slice(aboutIndex + 5).trim();
+      query = aboutWord;
+    }
 
     const response = await gmail.users.messages.list({
       userId: "me",
@@ -159,7 +168,8 @@ const fetchEmailDetails = async (gmail, messages) => {
 export const summarizeUnreadEmails = async (googleId) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user || !user.tokens) throw new Error("No Gmail authentication found for user.");
+    if (!user || !user.tokens)
+      throw new Error("No Gmail authentication found for user.");
 
     const emails = await getUnreadEmails(googleId);
 
@@ -193,7 +203,8 @@ export const summarizeUnreadEmails = async (googleId) => {
 export const sendAutoReply = async (googleId, email, message) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user || !user.tokens) throw new Error("No Gmail authentication found for user.");
+    if (!user || !user.tokens)
+      throw new Error("No Gmail authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2();
     oauth2Client.setCredentials(user.tokens);
