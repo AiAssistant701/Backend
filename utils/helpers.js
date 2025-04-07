@@ -94,3 +94,27 @@ export const sanitizeControllerInput = (input) => {
 
   return input.trim().substring(0, 500);
 };
+
+// =======================
+// to extract the most likely filename
+// =======================
+export const extractFilenameFromQuery = (query) => {
+  // Remove common command phrases
+  const cleanedQuery = query
+    .replace(
+      /retrieve|get|find|search|the|file|files|saved|last|week|month|year/gi,
+      ""
+    )
+    .trim();
+
+  // Find the longest remaining word that could be a filename
+  const words = cleanedQuery.split(/\s+/);
+  let bestCandidate = "";
+  for (const word of words) {
+    if (word.length > bestCandidate.length && /^[a-z0-9_-]+$/i.test(word)) {
+      bestCandidate = word;
+    }
+  }
+
+  return bestCandidate || "";
+};

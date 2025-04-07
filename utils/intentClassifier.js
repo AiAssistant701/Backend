@@ -371,7 +371,7 @@ export const classifyIntent = async (text) => {
 //       expected: "upload_file",
 //     },
 //     {
-//       prompt: "Where is the quarterly report PDF I saved last week?",
+//       prompt: "Retrieve the universities file I saved last week", Find the report.pdf document
 //       expected: "file_retrieval",
 //     },
 //     {

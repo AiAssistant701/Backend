@@ -31,7 +31,7 @@ export const processUserRequest = async ({
   googleId,
   file,
 }) => {
-  const taskType = "search_emails";
+  const taskType = await classifyIntent(prompt);
   logger.info("taskType: " + taskType);
 
   const description = await generateTaskDescription(prompt);

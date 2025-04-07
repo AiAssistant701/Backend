@@ -3,6 +3,7 @@ import { google } from "googleapis";
 import logger from "../../utils/logger.js";
 import { getUserByGoogleID } from "../../usecases/users.js";
 import { classifyFile } from "../../utils/fileClassifier.js";
+import { extractFilenameFromQuery } from "../../utils/helpers.js";
 
 // =======================
 // Uploads a file to Google Drive
@@ -66,14 +67,40 @@ export const getGoogleDriveFiles = async (googleId, query = "") => {
 
     const drive = google.drive({ version: "v3", auth: oauth2Client });
 
-    // Querying files
+    const fetchAllFilesKeywords = [
+      "all files",
+      "list everything",
+      "show all",
+      "get all",
+    ];
+    const shouldFetchAllFiles =
+      !query ||
+      fetchAllFilesKeywords.some((keyword) =>
+        query.toLowerCase().includes(keyword)
+      );
+
+    if (shouldFetchAllFiles) {
+      const response = await drive.files.list({
+        fields: "files(id, name, webViewLink)",
+        spaces: "drive",
+      });
+      return response.data.files;
+    }
+
+    const fileName = extractFilenameFromQuery(query);
+    if (!fileName) {
+      const response = await drive.files.list({
+        fields: "files(id, name, webViewLink)",
+        spaces: "drive",
+      });
+      return response.data.files;
+    }
+
     const response = await drive.files.list({
-      q: query ? `name contains '${query}'` : "",
+      q: `name contains '${fileName}'`,
       fields: "files(id, name, webViewLink)",
       spaces: "drive",
     });
-    logger.info("response", response.data.files);
-
     return response.data.files;
   } catch (error) {
     throw new Error(`Google Drive API Error: ${error.message}`);
