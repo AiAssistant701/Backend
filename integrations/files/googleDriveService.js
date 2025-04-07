@@ -44,7 +44,7 @@ export const uploadFileToGoogleDrive = async (googleId, filePath, fileName) => {
 
     return { ...response.data, category };
   } catch (error) {
-    logger.error(121, error.message);
+    logger.error("Error: " + error.message);
     throw new Error("Failed to upload file to Google Drive");
   }
 };
