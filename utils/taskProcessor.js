@@ -1,4 +1,5 @@
 import logger from "./logger.js";
+import { normalizeResponse } from "./helpers.js";
 import { getModelForTask } from "./modelRouter.js";
 import { classifyIntent } from "./intentClassifier.js";
 import { selectBestModelForUser } from "./modelRouter.js";
@@ -59,6 +60,8 @@ export const processUserRequest = async ({
 
   let result = await aiOrchestrator(taskType, payload);
   result.metadata = selectedProviderData;
+
+  result.response = normalizeResponse(result.response);
 
   await updateTaskToCompleted(taskHistory._id);
 

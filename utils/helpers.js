@@ -118,3 +118,16 @@ export const extractFilenameFromQuery = (query) => {
 
   return bestCandidate || "";
 };
+
+// =======================
+// to normalize the response in AI controller
+// =======================
+export const normalizeResponse = (response) => {
+  if (Array.isArray(response)) {
+    return response;
+  } else if (typeof response === "string") {
+    return [response];
+  } else {
+    return [];
+  }
+};
