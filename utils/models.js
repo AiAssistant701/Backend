@@ -59,7 +59,7 @@ export const callAIModel = async (userId, provider, prompt) => {
       apiUrl =
         "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2";
       payload = {
-        inputs: `[INST] ${systemMessage} [/INST]\n\n${prompt}`,
+        inputs: `[INST] ${systemMessage}\nPlease answer in less than 500 words. Be concise. [/INST]\n\n${prompt}`,
         parameters: { max_new_tokens: 200 },
       };
       break;
@@ -162,8 +162,15 @@ export const callAIModel = async (userId, provider, prompt) => {
         aiResponse = response.data.message?.content[0].text;
         break;
       case HUGGINGFACE:
-        let initialResponse = response.data[0]?.generated_text;
-        aiResponse = initialResponse.replace(/^.*?\n+\s*/, "");
+        let initialResponse = response.data[0]?.generated_text ?? "";
+
+        initialResponse = initialResponse
+          .replace(/^[\s\S]*?\[\/INST\]/, "")
+          .replace(/\n{2,}/g, "\n")
+          .replace(/Please answer in less than 500 words\. Be concise\.?/i, "")
+          .trim();
+
+        aiResponse = initialResponse;
         break;
       case ANTHROPIC:
         aiResponse = response.data?.content[0].text;
@@ -194,7 +201,7 @@ export const callAIModel = async (userId, provider, prompt) => {
     const compressedMetadata = JSON.stringify(metadata);
 
     const metadataSize = Buffer.from(compressedMetadata).length;
-    console.log("Metadata size:", metadataSize);
+    logger.info("Metadata size: " + metadataSize);
 
     if (metadataSize > 40960) {
       throw new Error("Metadata size exceeds Pinecone limit after compression");

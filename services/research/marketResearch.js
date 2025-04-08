@@ -17,6 +17,8 @@ const GOOGLE_CSE_ID = process.env.GOOGLE_CSE_ID;
 // =======================
 export const performMarketResearch = async (payload) => {
   try {
+    const MAX_GOOGLE_RESULTS = 5;
+    const MAX_NEWS_ARTICLES = 5;
     const startTime = Date.now(); // Start time for execution tracking
 
     const googleSearchResults = await axios.get(
@@ -27,25 +29,40 @@ export const performMarketResearch = async (payload) => {
       `https://newsapi.org/v2/everything?q=${payload.query}&apiKey=${NEWS_API_KEY}`
     );
 
-    // Combine search & news results
-    const combinedText =
-      googleSearchResults.data.items.map((item) => item.snippet).join("\n") +
-      "\n" +
+    const googleSnippets =
+      googleSearchResults.data.items
+        ?.slice(0, MAX_GOOGLE_RESULTS)
+        .map((item) => {
+          const snippet = item.snippet || "No summary available.";
+          return `${snippet} [Source: ${item.link}]`;
+        })
+        .join("\n\n") || "";
+
+    const newsDescriptions =
       newsResults.data.articles
-        .map((article) => article.description)
-        .join("\n");
+        ?.slice(0, MAX_NEWS_ARTICLES)
+        .map((article) => {
+          const description =
+            article.description || article.content || "No summary available.";
+          return `${description} [Read more at: ${article.url}]`;
+        })
+        .join("\n\n") || "";
+
+    const combinedText = [googleSnippets, newsDescriptions]
+      .filter(Boolean)
+      .join("\n\n");
 
     payload.query = `Generate a summary for this market research: ${combinedText}`;
 
-    let response = await chatbotService(MARKET_RESEARCH, payload);
+    // let response = await chatbotService(MARKET_RESEARCH, payload);
 
-    const summary = response.response;
+    // const summary = response.response;
 
     // Save market research
-    await saveMarketResearch(payload.userId, payload.query, summary, [
-      ...googleSearchResults.data.items,
-      ...newsResults.data.articles,
-    ]);
+    // await saveMarketResearch(payload.userId, payload.query, summary, [
+    //   //...googleSearchResults.data.items,
+    //   ...newsResults.data.articles,
+    // ]);
 
     // Calculate execution time
     const executionTime = Date.now() - startTime;
@@ -60,7 +77,7 @@ export const performMarketResearch = async (payload) => {
     );
 
     return {
-      response: summary,
+      response: combinedText,
     };
   } catch (error) {
     logger.error("❌ Market Research Error:", error);
