@@ -59,14 +59,19 @@ export const processUserRequest = async ({
   });
 
   let result = await aiOrchestrator(taskType, payload);
-  result.metadata = selectedProviderData;
 
-  result.response = normalizeResponse(result.response);
+  const normalizedResponse = normalizeResponse(result.response || result);
+
+  const finalResult = {
+    ...result,
+    response: normalizedResponse,
+    metadata: selectedProviderData,
+  };
 
   await updateTaskToCompleted(taskHistory._id);
 
   return {
-    result,
+    result: finalResult,
     taskHistory,
   };
 };

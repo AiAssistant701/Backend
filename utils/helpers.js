@@ -123,11 +123,31 @@ export const extractFilenameFromQuery = (query) => {
 // to normalize the response in AI controller
 // =======================
 export const normalizeResponse = (response) => {
-  if (Array.isArray(response)) {
+  if (!response) return [];
+
+  // If it's already an array of objects, return as-is
+  if (
+    Array.isArray(response) &&
+    response.length > 0 &&
+    typeof response[0] === "object"
+  ) {
     return response;
-  } else if (typeof response === "string") {
-    return [response];
-  } else {
-    return [];
   }
+
+  // If it's an array of strings, convert to array of objects with consistent structure
+  if (
+    Array.isArray(response) &&
+    response.length > 0 &&
+    typeof response[0] === "string"
+  ) {
+    return response.map((text) => ({ text }));
+  }
+
+  // If it's a single string, convert to array with one object
+  if (typeof response === "string") {
+    return [{ text: response }];
+  }
+
+  // Fallback for other cases
+  return [];
 };
