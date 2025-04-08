@@ -34,9 +34,9 @@ export const performMarketResearch = async (payload) => {
         ?.slice(0, MAX_GOOGLE_RESULTS)
         .map((item) => {
           const snippet = item.snippet || "No summary available.";
-          return `${snippet} [Source: ${item.link}]`;
+          return `${snippet} <a href="${item.link}" target="_blank" rel="noopener noreferrer">[Source]</a>`;
         })
-        .join("\n\n") || "";
+        .join("<br><br>") || "";
 
     const newsDescriptions =
       newsResults.data.articles
@@ -44,13 +44,13 @@ export const performMarketResearch = async (payload) => {
         .map((article) => {
           const description =
             article.description || article.content || "No summary available.";
-          return `${description} [Read more at: ${article.url}]`;
+          return `${description} <a href="${article.url}" target="_blank" rel="noopener noreferrer">[Read more]</a>`;
         })
-        .join("\n\n") || "";
+        .join("<br><br>") || "";
 
     const combinedText = [googleSnippets, newsDescriptions]
       .filter(Boolean)
-      .join("\n\n");
+      .join("<br><br>");
 
     payload.query = `Generate a summary for this market research: ${combinedText}`;
 
