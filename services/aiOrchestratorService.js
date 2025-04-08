@@ -142,7 +142,7 @@ export const aiOrchestrator = async (taskType, payload) => {
       case FETCH_UPCOMING_EVENTS:
         modelUsed = "Google Calendar API";
         reasoning = "Google API fetches the most accurate upcoming events.";
-        result = await getUpcomingEvents(payload.googleId);
+        result = await getUpcomingEvents(payload.googleId, payload.eventDetails);
         decisionScore = 1.0;
         break;
 

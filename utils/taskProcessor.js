@@ -20,6 +20,7 @@ import {
   REPORT_GENERATION,
   MARKET_RESEARCH,
   HEALTH_REMINDERS,
+  FETCH_UPCOMING_EVENTS,
 } from "./constants.js";
 
 // =======================
@@ -102,6 +103,7 @@ const buildPayloadForTask = async ({
       return { ...payload, ...emailDetails };
 
     case MEETING_SCHEDULING:
+    case FETCH_UPCOMING_EVENTS:
       const eventDetails = await extractEventDetails(prompt);
       if (!eventDetails) {
         throw new Error("Could not extract event details");

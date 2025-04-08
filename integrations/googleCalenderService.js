@@ -8,7 +8,8 @@ import { MEETING_SCHEDULING } from "../utils/constants.js";
 export const createCalendarEvent = async (googleId, eventDetails) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user || !user.tokens) throw new Error("No Google authentication found for user.");
+    if (!user || !user.tokens)
+      throw new Error("No Google authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
@@ -57,10 +58,11 @@ export const createCalendarEvent = async (googleId, eventDetails) => {
 // =======================
 // Fetch upcoming calendar events
 // =======================
-export const getUpcomingEvents = async (googleId) => {
+export const getUpcomingEvents = async (googleId, eventDetails = {}) => {
   try {
     const user = await getUserByGoogleID(googleId);
-    if (!user || !user.tokens) throw new Error("No Google authentication found for user.");
+    if (!user || !user.tokens)
+      throw new Error("No Google authentication found for user.");
 
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
@@ -71,16 +73,47 @@ export const getUpcomingEvents = async (googleId) => {
 
     const calendar = google.calendar({ version: "v3", auth: oauth2Client });
 
-    const response = await calendar.events.list({
+    const { startTime, maxResults = 10 } = eventDetails;
+
+    if (!startTime) throw new Error("Missing startTime in event details.");
+
+    const date = new Date(startTime);
+
+    const timeMin = new Date(
+      Date.UTC(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate(),
+        0,
+        0,
+        0
+      )
+    ).toISOString();
+
+    const timeMax = new Date(
+      Date.UTC(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate(),
+        23,
+        59,
+        59
+      )
+    ).toISOString();
+
+    const params = {
       calendarId: "primary",
-      timeMin: new Date().toISOString(),
-      maxResults: 10,
+      timeMin,
+      timeMax,
+      maxResults,
       singleEvents: true,
       orderBy: "startTime",
-    });
+    };
+
+    const response = await calendar.events.list(params);
 
     return { response: response.data.items };
   } catch (error) {
-    throw new Error(`Google Calendar API Error: ${error}`);
+    throw new Error(`Google Calendar API Error: ${error.message}`);
   }
 };
