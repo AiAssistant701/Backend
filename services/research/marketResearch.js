@@ -1,8 +1,8 @@
 import axios from "axios";
 import dotenv from "dotenv";
 import logger from "../../utils/logger.js";
-import { MARKET_RESEARCH } from "../../utils/constants.js";
 import { chatbotService } from "../chatbotService.js";
+import { MARKET_RESEARCH } from "../../utils/constants.js";
 import { saveMarketResearch } from "../../usecases/markets.js";
 import { logAIDecision } from "../../usecases/aiDecicionLogs.js";
 
@@ -34,9 +34,9 @@ export const performMarketResearch = async (payload) => {
         ?.slice(0, MAX_GOOGLE_RESULTS)
         .map((item) => {
           const snippet = item.snippet || "No summary available.";
-          return `${snippet} <a href="${item.link}" target="_blank" rel="noopener noreferrer">[Source]</a>`;
+          return `${snippet} [Source: ${item.link}]`;
         })
-        .join("<br><br>") || "";
+        .join("\n\n") || "";
 
     const newsDescriptions =
       newsResults.data.articles
@@ -44,13 +44,13 @@ export const performMarketResearch = async (payload) => {
         .map((article) => {
           const description =
             article.description || article.content || "No summary available.";
-          return `${description} <a href="${article.url}" target="_blank" rel="noopener noreferrer">[Read more]</a>`;
+          return `${description} [Read more at: ${article.url}]`;
         })
-        .join("<br><br>") || "";
+        .join("\n\n") || "";
 
     const combinedText = [googleSnippets, newsDescriptions]
       .filter(Boolean)
-      .join("<br><br>");
+      .join("\n\n");
 
     payload.query = `Generate a summary for this market research: ${combinedText}`;
 

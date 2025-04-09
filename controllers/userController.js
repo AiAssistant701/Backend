@@ -55,16 +55,34 @@ export const storeApiKeys = async (req, res, next) => {
   try {
     const { userId, apiKeys } = req.body; // apiKeys = [{ provider, key }]
 
-    const encryptedKeys = apiKeys.map(({ provider, key }) => ({
-      provider: provider.toLowerCase(),
-      key: encrypt(key),
-    }));
+    const user = await User.findById(userId);
 
-    await User.findByIdAndUpdate(userId, {
-      $push: { apiKeys: { $each: encryptedKeys } },
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const updatedKeys = [...user.apiKeys];
+
+    apiKeys.forEach(({ provider, key }) => {
+      const encryptedKey = encrypt(key);
+      const index = updatedKeys.findIndex(
+        (item) => item.provider.toLowerCase() === provider.toLowerCase()
+      );
+
+      if (index !== -1) {
+        updatedKeys[index].key = encryptedKey;
+      } else {
+        updatedKeys.push({
+          provider: provider.toLowerCase(),
+          key: encryptedKey,
+        });
+      }
     });
 
-    responseHandler(res, null, "API Keys stored successfully!");
+    user.apiKeys = updatedKeys;
+    await user.save();
+
+    responseHandler(res, null, "API Keys stored/updated successfully!");
   } catch (error) {
     next(error);
   }
